@@ -24,6 +24,8 @@ const conn = new Sequelize(process.env.AUTH_DB_NAME, process.env.AUTH_DB_UNAME, 
     logging: console.log,
 });
 
+
+
 const Tenant = conn.define('Tenant', {
   business_name : {
     type : DataTypes.STRING,
@@ -82,6 +84,8 @@ const User = conn.define('User', {
 }
 );
 
+User.belongsTo(Tenant, {foreignKey: 'tenant_id'});
+
 // 1. Registrar el plugin de JWT
 fastify.register(fastifyJwt, {
   secret: process.env.JWT_SECRET
@@ -98,15 +102,18 @@ fastify.decorate("authenticate", async function(request, reply) {
 
 // 3. Ruta de Login (Genera el Token)
 fastify.post('/login', async (request, reply) => {
-  const { username, password } = request.body;
-  const role = "admin"
-  const { company_id, user_id } = [1, 1];
+  const { email, password } = request.body;
+
+  const user = await User.findOne({where : { email }});
+  const pepper = process.env.AUTH_DB_PEPPER;
+
+  const isMatch = await bcrypt.compare(password + pepper, user.password);
 
   // Aquí vamos a validar con la database
-  if (username === 'admin' && password === 'admin123') {
+  if (isMatch) {
     const token = fastify.jwt.sign({ 
       user_id,
-      username, 
+      email, 
       role,
       company_id,
     }, {expiresIn: "2h"});
@@ -125,7 +132,7 @@ fastify.get('/candidates', { onRequest: [fastify.authenticate] }, async (request
 const start = async () => {
   try {
     await fastify.listen({ port });
-    console.log(`Server listening on port ${port}`);
+    console.log(`Server listening on port ${port}`);    
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
