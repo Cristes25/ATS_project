@@ -1,5 +1,7 @@
 const path = require('path');
 const dotenv = require('dotenv').config();
+const { Sequelize, DataTypes } = require("sequelize");
+const bcrypt = require('bcrypt');
 
 if (dotenv.error) {
   console.error("Error loading .env file", dotenv.error);
@@ -14,6 +16,71 @@ const fastify = require('fastify')({ logger: true });
 const fastifyJwt = require('@fastify/jwt');
 
 const port = process.env.PORT;
+
+// Database Connection
+const conn = new Sequelize(process.env.AUTH_DB_NAME, process.env.AUTH_DB_UNAME, process.env.AUTH_DB_PASSWORD, {
+    host: process.env.AUTH_DB_HOST,
+    dialect: 'postgres',
+    logging: console.log,
+});
+
+const Tenant = conn.define('Tenant', {
+  business_name : {
+    type : DataTypes.STRING,
+    allowNull: false,
+    unique: true
+  },
+  subscription_plan : {
+    type: DataTypes.STRING,
+    allowNull: false
+  }
+}, {timestamps: true});
+
+const User = conn.define('User', {
+  email : {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  first_name : {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  last_name : {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  password : {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  tenant_id : {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  law_787_accepted: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+}, {
+  hooks: {
+    beforeSave: async (user) => {
+      if (user.changed('password')){
+        const saltRounds = 12;
+        const pepper = process.env.AUTH_DB_PEPPER;
+
+        // Safety check for pepper
+        if (!pepper) {
+          throw new Error("SECRET_MANAGEMENT_ERROR: Pepper is not defined in .env");
+        }
+
+        const passwordWithPepper = password + pepper;
+        user.password = await bcrypt.hash(passwordWithPepper, saltRounds);
+      }
+    }
+  },
+  timestamps: true
+}
+);
 
 // 1. Registrar el plugin de JWT
 fastify.register(fastifyJwt, {
