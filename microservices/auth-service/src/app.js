@@ -14,7 +14,6 @@ if (!process.env.JWT_SECRET) {
 
 const fastify = require('fastify')({ logger: true });
 const fastifyJwt = require('@fastify/jwt');
-const { REPL_MODE_SLOPPY } = require('repl');
 
 const port = process.env.PORT;
 
@@ -91,6 +90,51 @@ const Employee = conn.define('Employee', {
 }
 );
 
+const Candidate = conn.define('Candidate', {
+  CandidateId: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  first_name : {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  last_name : {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  password : {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  law_787_accepted: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+}, {
+  hooks: {
+    beforeSave: async (employee) => {
+      if (employee.changed('password')){
+        const saltRounds = 12;
+        const pepper = process.env.AUTH_DB_PEPPER;
+
+        // Safety check for pepper
+        if (!pepper) {
+          throw new Error("SECRET_MANAGEMENT_ERROR: Pepper is not defined in .env");
+        }
+
+        const passwordWithPepper = employee.password + pepper;
+        employee.password = await bcrypt.hash(passwordWithPepper, saltRounds);
+      }
+    }
+  },
+  timestamps: true})
+
 Tenant.hasMany(Employee, { foreignKey: 'tenant_id' });
 Employee.belongsTo(Tenant, {foreignKey: 'tenant_id'});
 
@@ -110,6 +154,7 @@ fastify.decorate("authenticate", async function(request, reply) {
 
 // 3. Ruta de Login (Genera el Token)
 fastify.post('/login', async (request, reply) => {
+  // Modify so it checks if the email is of an employee or candidate
   const { email, password } = request.body;
 
   const user = await Employee.findOne({where : { email }});
@@ -155,10 +200,32 @@ fastify.post('/employees', async (request, reply) => {
   }
 })
 
-// 4. Ruta Protegida (Ejemplo: Ver CVs)
-fastify.get('/candidates', { onRequest: [fastify.authenticate] }, async (request, reply) => {
-  return { message: "Lista de candidatos cargada", user: request.user };
-});
+// Get enpoints for candidate and employees missing
+
+fastify.post('/register/candidate', async (request, reply) => {
+  const { email, password, first_name, last_name, law_787_accepted } = request.body;
+  // middleware needed
+  const candidateObject = {
+    email,
+    password,
+    first_name,
+    last_name,
+    law_787_accepted
+  };
+
+  try {
+    const newCandidate = await Candidate.create(candidateObject);
+    return newCandidate
+  } catch (error) {
+    console.log("Could not create new candidate: ", error);
+    reply.code(500).send({error: `Database error: ${error}`});
+  }
+})
+
+// TO DO: /tenants/:id get tenant by ID endpoint
+
+// TO DO: register/tenant endpoint 
+// Must create company and create the first employee (Admin) in one go
 
 // 5. Iniciamos el servidor
 const start = async () => {
