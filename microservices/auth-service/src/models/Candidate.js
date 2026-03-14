@@ -1,5 +1,9 @@
-const Candidate = conn.define('Candidate', {
-  CandidateId: {
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+const bcrypt = require('bcrypt');
+
+const Candidate = sequelize.define('Candidate', {
+  id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
@@ -7,16 +11,18 @@ const Candidate = conn.define('Candidate', {
   email: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
+    validate: { isEmail: true }
   },
-  first_name : {
+  first_name: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  last_name : {
+  last_name: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  password : {
+  password: {
     type: DataTypes.STRING,
     allowNull: false
   },
@@ -26,21 +32,21 @@ const Candidate = conn.define('Candidate', {
   },
 }, {
   hooks: {
-    beforeSave: async (employee) => {
-      if (employee.changed('password')){
+    beforeSave: async (candidate) => {
+      if (candidate.changed('password')) {
         const saltRounds = 12;
         const pepper = process.env.AUTH_DB_PEPPER;
 
-        // Safety check for pepper
         if (!pepper) {
           throw new Error("SECRET_MANAGEMENT_ERROR: Pepper is not defined in .env");
         }
 
-        const passwordWithPepper = employee.password + pepper;
-        employee.password = await bcrypt.hash(passwordWithPepper, saltRounds);
+        const passwordWithPepper = candidate.password + pepper;
+        candidate.password = await bcrypt.hash(passwordWithPepper, saltRounds);
       }
     }
   },
-  timestamps: true})
+  timestamps: true
+});
 
 module.exports = Candidate;

@@ -1,21 +1,25 @@
-const Employee = conn.define('Employee', {
-  email : {
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+const bcrypt = require('bcrypt');
+
+const Employee = sequelize.define('Employee', {
+  email: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  first_name : {
+  first_name: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  last_name : {
+  last_name: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  password : {
+  password: {
     type: DataTypes.STRING,
     allowNull: false
   },
-  tenant_id : {
+  tenant_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
@@ -30,11 +34,10 @@ const Employee = conn.define('Employee', {
 }, {
   hooks: {
     beforeSave: async (employee) => {
-      if (employee.changed('password')){
+      if (employee.changed('password')) {
         const saltRounds = 12;
         const pepper = process.env.AUTH_DB_PEPPER;
 
-        // Safety check for pepper
         if (!pepper) {
           throw new Error("SECRET_MANAGEMENT_ERROR: Pepper is not defined in .env");
         }
@@ -45,7 +48,6 @@ const Employee = conn.define('Employee', {
     }
   },
   timestamps: true
-}
-);
-    
+});
+
 module.exports = Employee;
