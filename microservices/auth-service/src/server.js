@@ -1,6 +1,18 @@
 require('dotenv').config(); // 1. Carga las llaves del .env
-const fastify = require('fastify')({ logger: true });
 const { sequelize } = require('./models'); // 2. Trae la conexión de config/database.js 
+
+// Añadier logger más bonito (pino-pretty)
+const fastify = require('fastify')({
+  logger: {
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        translateTime: 'HH:MM:ss Z', // Human readable time
+        ignore: 'pid,hostname',      // Hide the noisy machine info
+      },
+    },
+  },
+});
 
 // 3. REGISTRO DE PLUGINS
 fastify.register(require('@fastify/jwt'), {
