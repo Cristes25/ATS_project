@@ -23,3 +23,7 @@ dist/
 build/
 # Documentación
 docs/
+
+# Tests
+tests/
+test_output.txt

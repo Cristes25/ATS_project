@@ -6,7 +6,7 @@ const authMiddleware = require('../middleware/authMiddleware'); // Import the au
 // --- Rutas protegidas de procesamiento de CV ---
 
 // Aplicar el middleware de autenticación a todas las rutas de este archivo.
-// Cada solicitud a /ingest-cv y /rank-applicants ahora requerirá un JWT válido.
+// Cada solicitud a /ingest-cv ahora requerirá un JWT válido.
 router.use(authMiddleware);
 
 /**
@@ -15,13 +15,5 @@ router.use(authMiddleware);
  * @access  Privado (Requiere JWT)
  */
 router.post('/ingest-cv', cvController.ingestCvText);
-
-/**
- * @route   POST /api/v1/cv/rank-applicants
- * @desc    Clasifica una lista de CVs de solicitantes contra una descripción de trabajo.
- * @access  Privado (Requiere JWT)
- */
-router.post('/rank-applicants', cvController.rankApplicants);
-
 
 module.exports = router;
