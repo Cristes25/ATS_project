@@ -13,6 +13,7 @@ node_modules/
 
 # Docker
 .dockerignore
+.docker-compose.yml
 
 # OS files
 .DS_Store

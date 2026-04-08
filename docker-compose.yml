@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  postgres-ai:
+    # Utilizamos la imagen oficial de ankane/pgvector que ya incluye PostgreSQL y la
+    # extensión nativa de C necesaria para operaciones de IA y similaridad de coseno
+    image: ankane/pgvector:latest
+    container_name: applik_postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      # Creamos por default la DB para el Talent Service (el resto pueden crearse internamente)
+      POSTGRES_DB: talent_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - applik_pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  applik_pgdata:
