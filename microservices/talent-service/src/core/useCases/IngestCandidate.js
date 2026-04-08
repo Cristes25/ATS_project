@@ -1,14 +1,17 @@
 const aiClient = require('../../infrastructure/aiBridge/AiClient');
 const { CandidateProfile, WorkExperience, Education, Skill, CandidateSkill } = require('../domain/models');
 const sequelize = require('../../infrastructure/database/sequelize');
+const fs = require('fs');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
 class IngestCandidateUseCase {
-    
+
     /**
      * Aplica el flujo complejo de Postulación pública o manual (RF-12, RF-13).
      * Requiere el texto del CV que ya fue parseado en una capa anterior (como S3 / Multer).
      */
-    async execute({ rawCvText, s3Url, law787Accepted, tenantId }) {
+    async execute({ rawCvText, s3Url, law787Accepted, tenantId, candidateId = null }) {
         if (law787Accepted !== true) {
             throw new Error('La política de privacidad y tratamiento de datos (Ley 787) no fue aceptada.');
         }
@@ -23,35 +26,85 @@ class IngestCandidateUseCase {
                 throw new Error('El modelo generativo no logró estructurar este CV.');
             }
 
-            // 2. Mock del App-level Auth ID (en el futuro esto lo da Auth-Service tras SignUp)
-            const mockCandidateId = Math.floor(Math.random() * 1000000);
+            // 1.5 Alternativa Local a S3 (Cero Costos)
+            // Se guardará una URL local haciendo referencia a un directorio estático
+            const localResumeUrl = s3Url ? s3Url : `/uploads/cv_dummies/candidato_${Date.now()}.pdf`;
+
+            // 2. Mock del App-level Auth ID
+            // Comentado para usar el candidateId dinámico:
+            // const mockCandidateId = Math.floor(Math.random() * 1000000);
+
+            // 2.5 Generar Vector Semántico del Perfil
+            // Se obtiene el array (vector) del AI Bridge
+            const embeddingVector = await aiClient.getEmbedding(rawCvText);
+            const mockVectorId = embeddingVector ? `em_local_${uuidv4().substring(0, 8)}` : null;
 
             // 3. Crear el Perfil Raíz
             const profile = await CandidateProfile.create({
-                candidate_id: mockCandidateId, // Debe ligarse a la creación de usuario real después
-                resume_url: s3Url || 'https://s3.dummy.url/cv.pdf',
+                candidate_id: candidateId,
+                resume_url: localResumeUrl,
                 headline: extractedData.summary || 'Candidato CV Recibido',
                 location: extractedData.personal_info.location || '',
                 phone: extractedData.personal_info.phone || '',
-                linkedin_url: extractedData.personal_info.email || '', // Usamos email de Fallback por ahora
+                linkedin_url: extractedData.personal_info.email || '',
+                embedding_id: mockVectorId, // Guardando la referencia vectorial local
                 law_787_accepted: true
             }, { transaction });
 
-            // 4. Procesar Experiencia Laboral (Y referencias extraídas por AI)
+            // 4. Procesar Experiencia Laboral
             if (extractedData.work_experiences && extractedData.work_experiences.length > 0) {
                 const workExps = extractedData.work_experiences.map(exp => ({
                     profile_id: profile.id,
                     company_name: exp.company_name || 'Desconocido',
                     job_title: exp.job_title || 'Colaborador',
                     description: exp.description || '',
-                    start_date: new Date(), // Requeriríamos un parser fino
+                    start_date: new Date(),
                     is_current: false
                 }));
                 await WorkExperience.bulkCreate(workExps, { transaction });
             }
 
-            // Nota: Aquí se procesarían también Educaciones y Skills...
-            // Y aquí se encola el cálculo a pgvector del Match Score frente a una Vacante.
+            // 5. Procesar Educaciones
+            if (extractedData.educations && extractedData.educations.length > 0) {
+                const educationsMapeadas = extractedData.educations.map(edu => ({
+                    profile_id: profile.id,
+                    institution: edu.institution || 'No especificada',
+                    degree: edu.degree || 'General',
+                    field_of_study: edu.field_of_study || '',
+                    start_date: new Date(), // Mock date (El AI Bridge debería devolver formatos ISO)
+                    is_current: false
+                }));
+                await Education.bulkCreate(educationsMapeadas, { transaction });
+            }
+
+            // 6. Procesar Habilidades (Skills) M:N
+            if (extractedData.skills && extractedData.skills.length > 0) {
+                const candidateSkillsToCreate = [];
+
+                for (const skillItem of extractedData.skills) {
+                    // Buscar o crear la habilidad en el catálogo general
+                    const [skillObj] = await Skill.findOrCreate({
+                        where: { name: skillItem.name || 'Habilidad Desconocida' },
+                        defaults: { type: 'tecnica' }, // Default fallback
+                        transaction
+                    });
+
+                    // Añadir al pivot table
+                    candidateSkillsToCreate.push({
+                        profile_id: profile.id,
+                        skill_id: skillObj.id,
+                        level: 'basico' // El nivel por defecto
+                    });
+                }
+
+                if (candidateSkillsToCreate.length > 0) {
+                    await CandidateSkill.bulkCreate(candidateSkillsToCreate, { transaction });
+                }
+            }
+
+            // 7. Encolado del "Match Score"
+            // Por arquitectura (PGVector), el match score se computará comparando `embeddingVector`
+            // contra los Embeddings de las tablas de Vacantes en el backend.
 
             await transaction.commit();
             return {

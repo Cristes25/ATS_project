@@ -16,7 +16,8 @@ class CandidateController {
                 rawCvText,
                 s3Url,
                 law787Accepted,
-                tenantId: request.tenantId || null // Depende de la lógica del link
+                tenantId: request.tenantId || null, // Depende de la lógica del link
+                candidateId: request.user && request.user.role === 'candidate' ? request.user.user_id : null
             });
             return reply.code(201).send(result);
         } catch (error) {
@@ -41,7 +42,10 @@ class CandidateController {
                 rawCvText,
                 s3Url,
                 law787Accepted,
-                tenantId: request.tenantId // Esto fue asegurado forzosamente por el Middleware JWT!
+                tenantId: request.tenantId, // Asegurado por JWT
+                // Si el que lo sube es recruiter, la identidad del candidato no es la del JWT del reclutador.
+                // Quedaría nulo (huérfano en talento) hasta que el candidato reclame su perfil.
+                candidateId: null 
             });
             return reply.code(201).send(result);
         } catch (error) {

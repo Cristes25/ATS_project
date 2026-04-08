@@ -8,9 +8,9 @@ const CandidateProfile = sequelize.define('CandidateProfile', {
         primaryKey: true,
     },
     candidate_id: {
-        // App-level FK a auth_db.candidates
+        // FK a nivel de aplicación hacia auth_db.candidates
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true, // Permitir nulos para perfiles 'huérfanos' (Public Apply)
         unique: true
     },
     resume_url: {
