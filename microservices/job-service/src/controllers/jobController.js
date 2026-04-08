@@ -27,19 +27,21 @@ exports.createJob = async (request, reply) => {
 // GET /jobs
 exports.getJobs = async (request, reply) => {
   const tenant_id = request.user.company_id;
-  const { status, department_id } = request.query;
+  const { status, department_id, limit = 20, offset = 0 } = request.query;
 
   const where = { tenant_id };
   if (status) where.status = status;
   if (department_id) where.department_id = department_id;
 
   try {
-    const jobs = await Job.findAll({
+    const { count, rows: jobs } = await Job.findAndCountAll({
       where,
       include: [{ model: Department, attributes: ['name'] }],
       order: [['createdAt', 'DESC']],
+      limit,
+      offset,
     });
-    return reply.send(jobs);
+    return reply.send({ total: count, limit, offset, data: jobs });
   } catch (error) {
     request.log.error(error);
     return reply.code(500).send({ error: `Database error: ${error.message}` });
@@ -101,16 +103,18 @@ exports.deleteJob = async (request, reply) => {
 
 // GET /jobs/public?tenant_id=X  — public listing for candidates (no auth)
 exports.getPublicJobs = async (request, reply) => {
-  const { tenant_id } = request.query;
+  const { tenant_id, limit = 20, offset = 0 } = request.query;
 
   try {
-    const jobs = await Job.findAll({
+    const { count, rows: jobs } = await Job.findAndCountAll({
       where: { tenant_id, status: 'published' },
       include: [{ model: Department, attributes: ['name'] }],
       attributes: ['id', 'title', 'description', 'requirements', 'salary_min', 'salary_max', 'closes_at', 'createdAt'],
       order: [['createdAt', 'DESC']],
+      limit,
+      offset,
     });
-    return reply.send(jobs);
+    return reply.send({ total: count, limit, offset, data: jobs });
   } catch (error) {
     request.log.error(error);
     return reply.code(500).send({ error: `Database error: ${error.message}` });

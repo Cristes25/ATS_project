@@ -54,12 +54,26 @@ const updateJobSchema = {
   },
 };
 
+const getJobsSchema = {
+  querystring: {
+    type: 'object',
+    properties: {
+      status:        { type: 'string', enum: ['draft', 'published', 'paused', 'closed'] },
+      department_id: { type: 'integer' },
+      limit:         { type: 'integer', minimum: 1, maximum: 100, default: 20 },
+      offset:        { type: 'integer', minimum: 0, default: 0 },
+    },
+  },
+};
+
 const publicJobsSchema = {
   querystring: {
     type: 'object',
     required: ['tenant_id'],
     properties: {
       tenant_id: { type: 'integer' },
+      limit:     { type: 'integer', minimum: 1, maximum: 100, default: 20 },
+      offset:    { type: 'integer', minimum: 0, default: 0 },
     },
   },
 };
@@ -80,7 +94,7 @@ async function jobRoutes(fastify, options) {
   // --- Vacantes (privadas) ---
   fastify.get('/jobs/stats',  { preHandler: authOnly }, jobController.getStats);
   fastify.post('/jobs',       { schema: createJobSchema, preHandler: authWrite }, jobController.createJob);
-  fastify.get('/jobs',        { preHandler: authOnly }, jobController.getJobs);
+  fastify.get('/jobs',        { schema: getJobsSchema, preHandler: authOnly }, jobController.getJobs);
   fastify.get('/jobs/:id',    { preHandler: authOnly }, jobController.getJobById);
   fastify.patch('/jobs/:id',  { schema: updateJobSchema, preHandler: authWrite }, jobController.updateJob);
   fastify.delete('/jobs/:id', { preHandler: authWrite }, jobController.deleteJob);
