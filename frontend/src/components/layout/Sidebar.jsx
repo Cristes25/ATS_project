@@ -1,12 +1,13 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import Logo from "../ui/Logo";
 import { Layout, LayoutDashboard, Briefcase, Users, BarChart3, Settings, LogOut, User } from "lucide-react";
 
 const Sidebar = () => {
     const { user, logout } = useAuth();
 
     const navLinkClass = ({isActive}) => 
-        `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:bg-purple-dark ${
+        `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 hover:bg-purple-dark hover:text-white ${
             isActive
             ? 'bg-gradient-sidebar text-white font-bold shadow-xs shadow-indigo-500/40' 
             : 'text-slate-400 '
@@ -15,8 +16,8 @@ const Sidebar = () => {
     return (
         <aside className="w-64 bg-applik-navy text-white p-6 flex flex-col h-screen left-0 top-0 border-r border-slate-800">
             <div className="flex items-center gap-3 mb-12 px-2">   
-                {/* APPLIK LOGO va a la izq del H2 */}
-                <h2 className="text-2xl font-bold mb-8">APPLIK</h2>
+                <Logo className="w-12 h-12"/>
+                <h2 className="text-2xl font-bold ">APPLIK</h2>
             </div>
             <nav className="flex flex-col space-y-4">
                 <NavLink to="/dashboard" className={navLinkClass}>
