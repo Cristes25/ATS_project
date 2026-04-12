@@ -55,7 +55,7 @@ function App() {
             <Route path='vacantes' element={<VacantesPage />}></Route>
             <Route path='candidatos' element={<CandidatosPage />}></Route>
             <Route path='estadistica' element={<div>Estadística aquí</div>}></Route>
-            <Route path='configuracion' element={<ConfiguraciónPage />}></Route>
+            <Route path='configuracion' element={<ConfiguracionPage />}></Route>
             <Route index element={<div>Página de Inicio</div>} />
           </Route>
 
