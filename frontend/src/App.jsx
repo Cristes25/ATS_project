@@ -9,7 +9,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import VacantesPage from './pages/Vacantes/VacantesPage';
 import CandidatosPage from './pages/Candidatos/CandidatosPage';
-import DashboardPage from './pages/Dashboard/DashboardPage';
+import PanelPrincipalPage from './pages/PanelPrincipal/PanelPrincipalPage';
 
 // Componente temporal para testing de sesión no más
 const TestLogin = () => {
@@ -48,7 +48,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route path='dashboard' element={<DashboardPage />}></Route>
+            <Route path='dashboard' element={<PanelPrincipalPage />}></Route>
             <Route path='vacantes' element={<VacantesPage />}></Route>
             <Route path='candidatos' element={<CandidatosPage />}></Route>
             <Route path='estadistica' element={<div>Estadística aquí</div>}></Route>
