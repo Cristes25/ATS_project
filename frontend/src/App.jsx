@@ -10,7 +10,8 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import VacantesPage from './pages/Vacantes/VacantesPage';
 import CandidatosPage from './pages/Candidatos/CandidatosPage';
 import PanelPrincipalPage from './pages/PanelPrincipal/PanelPrincipalPage';
-import ApplicantLayout from './components/layout/ApplicantLayout/ApplicantLayout';
+import ApplicantLayout from './components/layout/ApplicantLayout/ApplicantLayout';import ConfiguracionPage from './pages/Configuracion/ConfiguracionPage';
+
 // Componentes temporales para testing de sesión no más
 import TestLogin from './pages/TestLogin';
 import PerfilPage from './pages/PortalAplicantes/PerfilPage';
@@ -50,14 +51,12 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route path='/dashboard' element={<div><PanelPrincipalPage /></div>}></Route>
-            <Route path='/vacantes' element={<VacantesPage />}></Route>
-            <Route path='/candidatos' element={<CandidatosPage/>}></Route>
-            <Route path='/estadistica' element={<div>Estadística aquí</div>}></Route>
-            <Route path='/configuracion' element={<div>Configuración aquí</div>}></Route>
-            <Route path='/configuracion/perfil' element={<div>Perfil aquí</div>}></Route>
-            <Route path='/configuracion/notificaiones' element={<div>Notificaciones aquí</div>}></Route>
-            <Route path='/configuracion/privacidad' element={<div>Privacidad aquí</div>}></Route>
+            <Route path='dashboard' element={<PanelPrincipalPage />}></Route>
+            <Route path='vacantes' element={<VacantesPage />}></Route>
+            <Route path='candidatos' element={<CandidatosPage />}></Route>
+            <Route path='estadistica' element={<div>Estadística aquí</div>}></Route>
+            <Route path='configuracion' element={<ConfiguraciónPage />}></Route>
+            <Route index element={<div>Página de Inicio</div>} />
           </Route>
 
             {/* Crear página de Not Found  */}
