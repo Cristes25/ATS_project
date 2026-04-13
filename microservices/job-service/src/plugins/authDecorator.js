@@ -1,6 +1,6 @@
 const fp = require('fastify-plugin');
 
-module.exports = fp(async (fastify, opts) => {
+module.exports = fp(async (fastify, _opts) => {
   fastify.decorate('authenticate', async (request, reply) => {
     try {
       // Verifica el JWT y decodifica el payload (user_id, role, company_id, active_subscription)
@@ -10,10 +10,10 @@ module.exports = fp(async (fastify, opts) => {
     }
   });
 
-  // Bloquea candidatos — solo employees/admins pueden gestionar vacantes
+  // Bloquea aplicantes — solo reclutadores/admins pueden gestionar vacantes
   fastify.decorate('requireEmployee', async (request, reply) => {
-    if (request.user?.role === 'candidate') {
-      return reply.code(403).send({ message: 'Acceso denegado: se requiere rol de empleado.' });
+    if (request.user?.role === 'aplicante') {
+      return reply.code(403).send({ message: 'Acceso denegado: se requiere rol de reclutador o admin.' });
     }
   });
 
