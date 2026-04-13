@@ -1,4 +1,5 @@
 const authController = require('../controllers/authController');
+const invitationController = require('../controllers/invitationController');
 
 async function authRoutes(fastify, options) {
 
@@ -11,6 +12,13 @@ async function authRoutes(fastify, options) {
   // Aquí agregaremos los TO-DOs:
   fastify.post('/organizations/register', authController.handleRegisterOrganization);
   // fastify.get('/tenants/:id', authController.getTenantById);
+
+  // Ruta protegida para invitar nuevo usuario reclutador
+  fastify.post('/invitations/create', {
+    onRequest: [fastify.authenticate]
+  }, invitationController.createInvitation)
+
+  fastify.post('invitations/accept', invitationController.handleAcceptInvitation);
 }
 
 module.exports = authRoutes;

@@ -3,16 +3,7 @@ const dotenv = require('dotenv').config()
 const { Employee, Candidate, Tenant, sequelize } = require('../models');
 const { verifyPassword } = require('../utils/passwordUtils');
 const { validateNicaraguanRUC } = require('../utils/validationUtils');
-
-const checkIfUserExists = async (email) => {
-  // Busca el email en ambos tipos de usuario
-  const employee = await Employee.findOne({ where: { email } });
-  if (employee) return true;
-
-  const candidate = await Candidate.findOne({ where: { email } });
-  // Retorna true si se encuentra al user en cualquiera de las dos; 
-  return !!candidate; 
-};
+const { checkIfUserExists } = require('../utils/userUtils');
 
 // Se necesitan middleware para validación de inputs.
 
