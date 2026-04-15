@@ -1,179 +1,187 @@
 const bcrypt = require('bcrypt');
-const dotenv = require('dotenv').config()
-const { Employee, Candidate, Tenant, sequelize } = require('../models');
-const { verifyPassword } = require('../utils/passwordUtils');
+const dotenv = require('dotenv').config();
+// Agregamos Session a los modelos importados
+const { Employee, Candidate, Tenant, Session, sequelize } = require('../models');
+const { verifyPassword, validatePasswordStrength } = require('../utils/passwordUtils');
 const { validateNicaraguanRUC } = require('../utils/validationUtils');
-
-const checkIfUserExists = async (email) => {
-  // Busca el email en ambos tipos de usuario
-  const employee = await Employee.findOne({ where: { email } });
-  if (employee) return true;
-
-  const candidate = await Candidate.findOne({ where: { email } });
-  // Retorna true si se encuentra al user en cualquiera de las dos; 
-  return !!candidate; 
-};
+const { checkIfUserExists } = require('../utils/userUtils');
 
 // Se necesitan middleware para validación de inputs.
 
 exports.handleLogin = async (request, reply) => {
   const { email, password } = request.body;
   const pepper = process.env.AUTH_DB_PEPPER;
+  let userType;
 
   try {
     // Buscamos al usuario en Employees
     let user = await Employee.findOne({ where: { email } });
     let isSubscriptionActive = null;
+
     // Si el usuario no está en Employees, buscar en Candidates
     if (!user) {
-      user = await Candidate.findOne({where : {email}});
+      user = await Candidate.findOne({ where: { email } });
       if (!user) return reply.code(401).send({ message: 'Credenciales inválidas' });
 
+      userType = "candidate";
       user.tenant_id = null;
-      user.role = "candidate";
+      user.role = "aplicante"; // IMPORTANTÍSIMO
     } else {
-      const tenant = await Tenant.findOne({where: {id: user.tenant_id}});
-      if (!tenant) return reply.code(401).send({ message: 'Company information not found.'});
+      const tenant = await Tenant.findOne({ where: { id: user.tenant_id } });
+      if (!tenant) return reply.code(401).send({ message: 'Company information not found.' });
+      
       isSubscriptionActive = tenant.active_subscription;
+      userType = "employee";
     }
 
-    const isMatch = await verifyPassword(password, user.password)
+    // Movimos esto fuera del else para que evalúe a ambos tipos de usuario
+    const isMatch = await verifyPassword(password, user.password);
 
     if (isMatch) {
       // Payload se define aquí !!!
-      const token = request.server.jwt.sign({ 
+      const jwtToken = request.server.jwt.sign({ 
         user_id: user.id, 
         role: user.role,
         company_id: user.tenant_id,
         active_subscription: isSubscriptionActive,
       }, { expiresIn: "2h" });
 
-      return { token };
+      const sessionExpiry = new Date();
+      sessionExpiry.setHours(sessionExpiry.getHours() + 8);
+
+      let sessionObject = {
+        token: jwtToken,
+        expires_at: sessionExpiry
+      };
+
+      if (userType === "employee") {
+        sessionObject.employee_id = user.id;
+      } else if (userType === "candidate") {
+        sessionObject.candidate_id = user.id;
+      } else {
+        return reply.code(401).send({ message: 'Credenciales inválidas' });
+      }
+
+      await Session.create(sessionObject);
+
+      return reply.send({ token: jwtToken });
     }
+    
     return reply.code(401).send({ message: 'Credenciales inválidas' });
+
   } catch (error) {
     request.log.error(error);
     return reply.code(500).send({ message: 'Error interno del servidor' });
   }
 };
 
-exports.handleRegister = async (request, reply) => {
-  const { email, password, first_name, last_name, law_787_accepted, tenant_id, role, user_type } = request.body;
-  
-  let createdUser;
-
-  if (!law_787_accepted) {
-    console.error("El usuario no a aceptado la ley 787")
-    return reply.code(400).send({error: "El usuario no ha aceptado la ley 787"});
-  }
-
-  if (await checkIfUserExists(email)){
-    console.error(`Usuario con correo ${email} ya existe.`)
-    return reply.code(400).send({error: `Usuario con correo ${email} ya existe.`});
-  }
+exports.handleRegisterApplicant = async (request, reply) => {
+  const { email, password, first_name, last_name, law_787_accepted } = request.body;
 
   try {  
-    switch (user_type) {
-      // Logica para crear usuario Employee
-      case "employee":
-        // Validar tenant
-        const tenant = await Tenant.findOne({where: {id: tenant_id}});
-        if (!tenant) return reply.code(404).send({ message: `No se ha encontrado a la compañia con id ${tenant_id}`});
-        
-        try{
-          createdUser = await Employee.create({
-            email,
-            password,
-            first_name,
-            last_name,
-            law_787_accepted,
-            role,
-            tenant_id,
+    const passwordCheck = validatePasswordStrength(password);
+    if (!passwordCheck.isValid){
+        return reply.code(400).send({
+            success: false,
+            field: "password", // Le decimos al frontend qué campo falló
+            message: passwordCheck.message
         });
-      } catch (error){
-        console.log("Could not create new employee: ", error);
-        reply.code(500).send({error: `Database error: ${error}`});
-      }
-        break;
-
-      // Lógica para crear usuario candidate
-      case "candidate":
-        try {
-          createdUser = await Candidate.create({
-          email,
-          password,
-          first_name,
-          last_name,
-          law_787_accepted
-        });
-        } catch (error) {
-            request.log.error("Could not create new candidate: ", error);
-            reply.code(500).send({ error: `Database error: ${error.message}` });
-        }
-        break;
-
-      default :
-        return reply.code(400).send({message: "user type not found"});
+    }
+    
+    if (!law_787_accepted) {
+      console.error("El usuario no a aceptado la ley 787");
+      return reply.code(400).send({ error: "El usuario no ha aceptado la ley 787" });
     }
 
-  const payload = {
-    user_id: createdUser.id,
-    role: "aplicante"
-  }
+    if (await checkIfUserExists(email)){
+      console.error(`Usuario con correo ${email} ya existe.`);
+      return reply.code(400).send({ error: `Usuario con correo ${email} ya existe.` });
+    }
 
-  return reply.code(201).send({
-      status: "success",
-      message: `Cuenta creada exitosamente para ${createdUser.email}`,
-      data: { 
-        id: createdUser.id, 
-        type: user_type,
-        organization: user_type === "employee" ? tenant_id : "N/A" 
+    const createdApplicant = await Candidate.create({
+      email,
+      password,
+      first_name,
+      last_name,
+      law_787_accepted
+    });
+
+    const payload = {
+      user_id: createdApplicant.id,
+      role: "aplicante",
+      active_subscription: null, 
+      company_id: null,
+    };
+
+    const jwtToken = await reply.jwtSign(payload);
+
+    const sessionExpiry = new Date();
+    sessionExpiry.setHours(sessionExpiry.getHours() + 8);
+
+    await Session.create({
+        token: jwtToken,
+        candidate_id: createdApplicant.id, // Corregido el typo aquí
+        expires_at: sessionExpiry
+    });
+
+    return reply.code(201).send({
+      success: true,
+      message: `Se creó al usuario aplicante: ${createdApplicant.id}`,
+      data: {
+        user_id: createdApplicant.id,
+        token: jwtToken
       }
     });
 
   } catch (error) {
-    request.log.error(error);
-    return reply.code(500).send({ error: "Error en en servidor al registrar usuario" });
+    return reply.code(500).send({
+      success: false,
+      message: `Algo salió mal al crear nuevo aplicante: ${error}`
+    });
   }
-}
-
-// Manejando registro de empresas
+};
 
 exports.handleRegisterOrganization = async (request, reply) => {
-  const { businessName, subscriptionPlan, RUC, adminEmail, first_name, last_name, password, law_787_accepted} = request.body;
+  const { businessName, subscriptionPlan, RUC, adminEmail, first_name, last_name, password, law_787_accepted } = request.body;
 
   // Validación de input:
-
-  // Validar RUC
-  const rucMatch = await Tenant.findOne({where: { RUC }});
-  
   if (!validateNicaraguanRUC(RUC)) {
     return reply.code(400).send({
-        success: false,
-        message: "El formato del RUC es inválido. Debe comenzar con 'J' seguido de 13 dígitos para empresas."
-    });
-
-  if (rucMatch){
-    return reply.code(409).send({
       success: false,
-      message: `Este RUC ya se encuentra registrado.`
-    })
+      message: "Formato de RUC inválido (debe empezar con 'J' y tener 14 caracteres)."
+    });
   }
 
-}
+  const rucExists = await Tenant.findOne({ where: { RUC } });
+  if (rucExists) {
+    return reply.code(409).send({ success: false, message: "Este RUC ya está registrado." });
+  }
+
+  const passwordCheck = validatePasswordStrength(password);
+    if (!passwordCheck.isValid){
+        return reply.code(400).send({
+            success: false,
+            field: "password", // Le decimos al frontend qué campo falló
+            message: passwordCheck.message
+        });
+    }
+
   // Validar Email único
-  if (await checkIfUserExists(adminEmail)){
-    console.error(`Usuario con correo ${adminEmail} ya existe.`)
+  if (await checkIfUserExists(adminEmail)) {
+    console.error(`Usuario con correo ${adminEmail} ya existe.`);
     return reply.code(400).send({
       success: false,
-      message: `Usuario con correo ${adminEmail} ya existe.`});
+      message: `Usuario con correo ${adminEmail} ya existe.`
+    });
   }
+
   // Validar ley aceptada
   if (!law_787_accepted) {
-    console.error("El usuario admin no a aceptado la ley 787")
+    console.error("El usuario admin no a aceptado la ley 787");
     return reply.code(400).send({
       success: false,
-      message: "El usuario admin no ha aceptado la ley 787"});
+      message: "El usuario admin no ha aceptado la ley 787"
+    });
   }
 
   const transaction = await sequelize.transaction();
@@ -185,7 +193,7 @@ exports.handleRegisterOrganization = async (request, reply) => {
       subscription_plan: 'básico', // hardcoded para demo
       RUC,
       active_subscription: true, // hardcoded para demo
-    }, {transaction});
+    }, { transaction });
     
     // Crear usuario admin
     const createdAdmin = await Employee.create({
@@ -196,22 +204,31 @@ exports.handleRegisterOrganization = async (request, reply) => {
       tenant_id: createdTenant.id,
       role: "admin",
       law_787_accepted
-    }, {transaction: transaction});
+    }, { transaction });
     
     await transaction.commit();
     
     // creando token para iniciar sesión del admin
-
     const payload = {
       user_id: createdAdmin.id,
       role: createdAdmin.role,
       company_id: createdTenant.id,
       active_subscription: createdTenant.active_subscription
-    }
+    };
 
-    const token = await reply.jwtSign(payload)
+    const token = await reply.jwtSign(payload);
 
-    reply.code(201).send({
+    // Create the session record
+    const sessionExpiry = new Date();
+    sessionExpiry.setHours(sessionExpiry.getHours() + 8);
+
+    await Session.create({
+      token: token,
+      employee_id: createdAdmin.id, 
+      expires_at: sessionExpiry
+    });
+
+    return reply.code(201).send({
       success: true,
       message: `Se creó compañía: ${createdTenant.id} con usuario admin: ${createdAdmin.id}`,
       data: {
@@ -221,12 +238,11 @@ exports.handleRegisterOrganization = async (request, reply) => {
       }
     });
 
-
   } catch (error) {
-    await transaction.rollback();
+    if (transaction && !transaction.finished) await transaction.rollback();
     reply.code(500).send({
       success: false,
       message: `Error al registrar empresa, abortando cambios: ${error}`
     });
   }
-}
+};

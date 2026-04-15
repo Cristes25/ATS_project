@@ -5,7 +5,8 @@ const Invitation = sequelize.define('Invitation', {
     id: {
         type: DataTypes.UUID,
         allowNull: false,
-        primaryKey: true
+        primaryKey: true,
+        defaultValue: DataTypes.UUIDV4
     },
     email: {
         type: DataTypes.STRING,
@@ -35,3 +36,5 @@ const Invitation = sequelize.define('Invitation', {
         defaultValue: false
     }
 })
+
+module.exports = Invitation;
