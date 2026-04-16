@@ -246,3 +246,52 @@ exports.handleRegisterOrganization = async (request, reply) => {
     });
   }
 };
+
+exports.getMe = async (request, reply) => {
+  try{
+    const { role, user_id } = request.user;
+
+    let responseData = {};
+
+    if (role === "admin" || role === "reclutador"){
+        const user = await Employee.findOne({
+          where: {id: user_id},
+          include: {
+            model: Tenant,
+            attributes: ['business_name']
+          }
+        });
+
+        if (!user) return reply.code(404).send({ success: false, message: "Usuario no encontrado" });
+
+        responseData = {
+          name: `${user.first_name} ${user.last_name}`,
+          email: user.email,
+          tenant_name: user.Tenant ? user.Tenant.business_name : null
+        };
+
+      } else if ( role === "aplicante") {
+        
+        const user = await Candidate.findOne({where: {id: user_id}});
+        
+        if (!user) return reply.code(404).send({ success: false, message: "Usuario no encontrado" });
+
+        responseData = {
+          name: `${user.first_name} ${user.last_name}`,
+          email: user.email,
+          tenant_name: null
+        }
+      }
+
+      return reply.code(200).send({
+        success: true,
+        data: responseData
+      });
+    } catch (error) {
+      request.log.error(error);
+      return reply.code(500).send({
+        success: false,
+        message: "Error del servidor al recuperar información de usuario"
+      })
+    }
+}
