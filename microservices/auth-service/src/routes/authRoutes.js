@@ -18,6 +18,10 @@ async function authRoutes(fastify, options) {
     onRequest: [fastify.authenticate]
   }, invitationController.createInvitation)
 
+  fastify.get('/me', {
+    onRequest: [fastify.authenticate]
+  }, authController.getMe);
+
   // Este lo llama http://localhost:${process.env.PORT}/api/v1/auth/register/reclutador al darle submit
   fastify.post('/invitations/accept', invitationController.handleAcceptInvitation);
 }
