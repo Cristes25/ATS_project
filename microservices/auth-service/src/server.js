@@ -31,16 +31,14 @@ const args = process.argv.slice(2); // Get command line arguments
 const start = async () => {
   try {
     // Command line option to alter tables
-    if (args.includes('--alter')) {
-      await sequelize.sync({ alter: true });
-      console.log('Base de datos actualizada.');
-    }
+    await sequelize.sync({ alter: true });
+    console.log('E2E Mode: Base de datos actualizada con alter: true.');
     
     await sequelize.authenticate();
     console.log('Conexión a la DB establecida correctamente.');
 
     const port = process.env.PORT || 3002; 
-    await fastify.listen({ port });
+    await fastify.listen({ port, host: '0.0.0.0' });
     
     console.log(`Auth Service activo en el puerto ${port}`);
   } catch (err) {

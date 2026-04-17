@@ -15,9 +15,9 @@ class AiBridgeClient {
     async extractCvData(rawText) {
         try {
             const response = await this.client.post('/cv/ingest-cv', {
-                text: rawText
+                cvText: rawText
             });
-            return response.data;
+            return response.data.data;
         } catch (error) {
             console.error('[AI Bridge] Fallo al extraer CV:', error.message);
             throw new Error('No se pudo establecer puente cognitivo con el CV.');

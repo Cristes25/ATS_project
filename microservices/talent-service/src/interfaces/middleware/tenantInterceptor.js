@@ -12,7 +12,7 @@ module.exports = fp(async function (fastify, opts) {
     fastify.addHook('preValidation', async (request, reply) => {
         try {
             // Permitir endpoints públicos o rutas exentas como la postulación directa del candidato
-            if (request.routerPath && request.routerPath.includes('/public/')) {
+            if (request.url && request.url.includes('/public/')) {
                 return;
             }
 

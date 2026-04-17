@@ -4,7 +4,7 @@ const { Job, Department } = require('../models');
 exports.createJob = async (request, reply) => {
   const { title, description, requirements, salary_min, salary_max, currency, department_id, closes_at } = request.body;
   const tenant_id = request.user.company_id;
-  const created_by = request.user.id;
+  const created_by = request.user.user_id;
 
   if (salary_max < salary_min) {
     return reply.code(400).send({ error: 'salary_max debe ser mayor o igual a salary_min.' });

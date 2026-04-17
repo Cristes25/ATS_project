@@ -22,6 +22,34 @@ const buildServer = async () => {
     });
 
     // Rutas de API
+    // Añadimos Swagger para auto-documentación
+    app.register(require('@fastify/swagger'), {
+      openapi: {
+        info: {
+          title: 'Talent Service API',
+          description: 'API central para la gestión, ingesta y parseo de CVs usando Inteligencia Artificial.',
+          version: '1.0.0'
+        },
+        components: {
+          securitySchemes: {
+            bearerAuth: {
+              type: 'http',
+              scheme: 'bearer',
+              bearerFormat: 'JWT'
+            }
+          }
+        }
+      }
+    });
+
+    app.register(require('@fastify/swagger-ui'), {
+      routePrefix: '/api/v1/talents/docs',
+      uiConfig: {
+        docExpansion: 'full',
+        deepLinking: false
+      }
+    });
+
     app.register(require('./interfaces/http/candidateRoutes'), { prefix: '/api/v1/talents' });
 
     // Intentar Conexión de Base de Datos

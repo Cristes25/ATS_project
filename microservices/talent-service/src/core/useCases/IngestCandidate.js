@@ -1,5 +1,5 @@
 const aiClient = require('../../infrastructure/aiBridge/AiClient');
-const { CandidateProfile, WorkExperience, Education, Skill, CandidateSkill } = require('../domain/models');
+const { CandidateProfile, WorkExperience, Education, Skill, CandidateSkill, Application } = require('../domain/models');
 const sequelize = require('../../infrastructure/database/sequelize');
 const fs = require('fs');
 const path = require('path');

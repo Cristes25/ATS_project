@@ -5,9 +5,7 @@ const authMiddleware = require('../middleware/authMiddleware'); // Import the au
 
 // --- Rutas protegidas de procesamiento de CV ---
 
-// Aplicar el middleware de autenticación a todas las rutas de este archivo.
-// Cada solicitud a /ingest-cv ahora requerirá un JWT válido.
-router.use(authMiddleware);
+// Internal microservice comunication bypasses auth
 
 /**
  * @route   POST /api/v1/cv/ingest-cv

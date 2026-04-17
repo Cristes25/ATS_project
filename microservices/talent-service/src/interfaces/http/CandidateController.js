@@ -28,7 +28,8 @@ class CandidateController {
             });
             return reply.code(201).send(result);
         } catch (error) {
-            request.log.error('Error aplicando en perfil público:', error);
+            request.log.error({ err: error }, 'Error aplicando en perfil público:');
+            console.error('TRACE COMPLETO:', error);
             if (error.message.includes('Ley 787')) {
                 return reply.code(403).send({ error: error.message });
             }

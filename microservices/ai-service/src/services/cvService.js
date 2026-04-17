@@ -21,9 +21,16 @@ const processAndStoreCv = async (cvText) => {
     try {
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        // Limpieza basica para asegurar que la salida sea JSON valido
-        const cleanedJson = response.text().replace(/```json|```/g, '').trim();
-        return JSON.parse(cleanedJson);
+        const rawTextResponse = response.text();
+        const start = rawTextResponse.indexOf('{');
+        const end = rawTextResponse.lastIndexOf('}');
+        
+        if (start === -1 || end === -1) {
+             throw new Error('JSON structure not found in AI response');
+        }
+        
+        const jsonStr = rawTextResponse.substring(start, end + 1);
+        return JSON.parse(jsonStr);
     } catch (error) {
         console.error('Error procesando CV con Gemini:', error);
         throw new Error('Error al procesar CV debido a un error interno de IA.');
