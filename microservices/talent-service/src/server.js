@@ -56,8 +56,14 @@ const buildServer = async () => {
     try {
         await sequelize.authenticate();
         app.log.info('La conexion a la base de datos PostgreSQL se ha establecido con exito.');
-        // En producción, force: false o sync manual. Para desarrollo rápido:
-        await sequelize.sync({ force: false });
+        // Sincronización - Seguro para Producción
+        const isDev = process.env.NODE_ENV !== 'production';
+        if (isDev) {
+            await sequelize.sync({ alter: true });
+            app.log.info('Dev Mode: Modelos BD Sincronizados Automáticamente.');
+        } else {
+            app.log.info('Prod Mode: Sincronización automática deshabilitada.');
+        }
     } catch (error) {
         console.error('\n--- DETALLE DEL ERROR DE BASE DE DATOS ---');
         console.error(error.message);

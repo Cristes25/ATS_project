@@ -30,9 +30,10 @@ const args = process.argv.slice(2); // Get command line arguments
 // 5. ARRANQUE DEL SERVICIO
 const start = async () => {
   try {
-    // Command line option to alter tables
-    await sequelize.sync({ alter: true });
-    console.log('E2E Mode: Base de datos actualizada con alter: true.');
+    // Sincronización - Seguro para Producción
+    const isDev = process.env.NODE_ENV !== 'production';
+    await sequelize.sync({ alter: isDev });
+    console.log(isDev ? 'Dev/E2E Mode: Base de datos actualizada con alter: true.' : 'Prod Mode: Alter desactivado.');
     
     await sequelize.authenticate();
     console.log('Conexión a la DB establecida correctamente.');

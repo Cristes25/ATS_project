@@ -31,8 +31,9 @@ const start = async () => {
     await sequelize.authenticate();
     console.log('Conexión a la DB establecida correctamente.');
 
-    await sequelize.sync({ alter: true });
-    console.log('E2E Mode: Base de datos actualizada con alter: true.');
+    const isDev = process.env.NODE_ENV !== 'production';
+    await sequelize.sync({ alter: isDev });
+    console.log(isDev ? 'Dev/E2E Mode: Base de datos actualizada con alter.' : 'Prod Mode: Alter desactivado.');
 
     const port = process.env.PORT || 3003;
     await fastify.listen({ port, host: '0.0.0.0' });
