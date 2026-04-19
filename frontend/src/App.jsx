@@ -15,6 +15,8 @@ import ConfiguracionPage from './pages/Configuracion/ConfiguracionPage';
 import EstadisticasPage from './pages/Estadisticas/EstadisticasPage';
 
 import LoginPage from './pages/Auth/LoginPage';
+import RegistroCandidatoPage from './pages/Auth/RegistroCandidatoPage';
+import RegistroEmpresaPage from './pages/Auth/RegistroEmpresaPage';
 import TestLogin from './pages/TestLogin';
 import PerfilPage from './pages/PortalAplicantes/PerfilPage';
 import InicioPage from './pages/PortalAplicantes/InicioPage';
@@ -35,9 +37,6 @@ function App() {
             <Route path='/trabajos' element={<TrabajosPage />}/>
             <Route path='/trabajo/:id' element={<DetallesPuestoPage />} />
             {/* ↑ Detalles de Aplicación podría ser un modal en lugar de página */}
-            <Route path='/registro' element={<div>Registro aquí</div>}/>
-            {/* Register para empresas, redirige loggeado como admin a /dashboard */}
-            <Route path='/registrar-empresa' element={<div>Registro empresa aquí</div>}/>
             {/* Ruta protegida para página de perfil */}
             <Route element={<ProtectedRoute allowedRoles={["aplicante", "reclutador", "admin"]} />}>
               <Route path='/perfil' element={<PerfilPage />} />
@@ -66,6 +65,8 @@ function App() {
 
             {/* Auth — sin layout */}
           <Route path='/login' element={<LoginPage />} />
+          <Route path='/registro' element={<RegistroCandidatoPage />} />
+          <Route path='/registrar-empresa' element={<RegistroEmpresaPage />} />
           {/* Dev only — personas de prueba */}
           <Route path='/dev/login' element={<TestLogin />} />
 

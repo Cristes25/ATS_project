@@ -56,7 +56,7 @@ const Navbar = () => {
                     {/* ── Izquierda: hamburguesa + logo ── */}
                     <div className="flex items-center gap-2">
                         <button
-                            onClick={() => setMobileMenuOpen((v) => !v)}
+                            onClick={() => { setMobileMenuOpen((v) => !v); setSearchOpen(false); }}
                             className="md:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-all"
                             aria-label="Abrir menú"
                         >
@@ -74,7 +74,7 @@ const Navbar = () => {
                         }`}>
                             <NavLink to="/"             className={navLinkClass}>Inicio</NavLink>
                             <NavLink to="/trabajos"     className={navLinkClass}>Trabajos</NavLink>
-                            <NavLink to="/aplicaciones" className={navLinkClass}>Mis Aplicaciones</NavLink>
+                            <NavLink to="/aplicaciones" className={navLinkClass}>Mi Actividad</NavLink>
                         </div>
 
                         {/* Search bar — solo desktop, ocupa el espacio del centro */}
@@ -107,8 +107,8 @@ const Navbar = () => {
                     <div className="flex items-center justify-end gap-1">
                         {/* Lupa — abre/cierra search */}
                         <button
-                            onClick={() => setSearchOpen((v) => !v)}
-                            className="p-2 text-slate-700 hover:bg-slate-100 rounded-full transition-all active:scale-95"
+                            onClick={() => { setSearchOpen((v) => !v); setMobileMenuOpen(false); }}
+                            className="p-2 text-slate-500 hover:bg-slate-100 hover:text-violet-600 rounded-full transition-all active:scale-95"
                             aria-label="Buscar"
                         >
                             {searchOpen ? <X size={20} /> : <Search size={20} />}
@@ -148,7 +148,7 @@ const Navbar = () => {
                 <div className="md:hidden w-full bg-white border-b border-slate-200 shadow-lg px-4 py-3 space-y-1">
                     <NavLink to="/"             className={mobileNavLinkClass} onClick={() => setMobileMenuOpen(false)}>Inicio</NavLink>
                     <NavLink to="/trabajos"     className={mobileNavLinkClass} onClick={() => setMobileMenuOpen(false)}>Trabajos</NavLink>
-                    <NavLink to="/aplicaciones" className={mobileNavLinkClass} onClick={() => setMobileMenuOpen(false)}>Mis Aplicaciones</NavLink>
+                    <NavLink to="/aplicaciones" className={mobileNavLinkClass} onClick={() => setMobileMenuOpen(false)}>Mi Actividad</NavLink>
                     {/* Iniciar Sesión — solo cuando no hay usuario */}
                     {!user && (
                         <NavLink to="/login" className={mobileNavLinkClass} onClick={() => setMobileMenuOpen(false)}>

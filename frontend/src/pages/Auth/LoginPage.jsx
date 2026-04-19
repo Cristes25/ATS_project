@@ -79,7 +79,7 @@ const LoginPage = () => {
 
                 {/* Footer */}
                 <p className="text-purple-300 text-xs">
-                    © 2026 Applik. Recruitment platform powered by AI.
+                    © 2026 Applik. Plataforma de reclutamiento impulsada por IA.
                 </p>
 
                 {/* Decorative circle */}
@@ -181,7 +181,7 @@ const LoginPage = () => {
                         {/* Submit */}
                         <button
                             type="submit"
-                            className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-2.5 rounded-xl transition-all duration-200 active:scale-[0.98] text-sm mt-2"
+                            className="w-full bg-violet-600 hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5 text-white font-semibold py-2.5 rounded-xl transition-all duration-200 active:scale-[0.98] text-sm mt-2"
                         >
                             Entrar
                         </button>
@@ -217,9 +217,15 @@ const LoginPage = () => {
                     {/* Sign up link */}
                     <p className="text-center text-sm text-slate-500 mt-6">
                         ¿No tienes cuenta?{" "}
-                        <Link to="/registro" className="text-violet-600 hover:text-violet-700 font-medium">
-                            Crear cuenta
-                        </Link>
+                        {tab === "empresa" ? (
+                            <Link to="/registrar-empresa" className="text-violet-600 hover:text-violet-700 font-medium">
+                                Registrar empresa
+                            </Link>
+                        ) : (
+                            <Link to="/registro" className="text-violet-600 hover:text-violet-700 font-medium">
+                                Crear cuenta
+                            </Link>
+                        )}
                     </p>
                 </div>
             </div>
