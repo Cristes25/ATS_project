@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { ArrowLeft, Download } from "lucide-react"
 import { Avatar } from "@/components/ui/Avatar"
 import { StageBadge } from "@/components/ui/StageBadge"
@@ -5,6 +6,14 @@ import { Button } from "@/components/ui/button"
 
 export default function DetallesCandidatoPage({ candidato, onBack, onActualizarEtapa, onDescartar }) {
   if (!candidato) return null
+  const [notas,    setNotas]    = useState("")
+  const [guardado, setGuardado] = useState(false)
+
+  const handleGuardarNotas = () => {
+    if (!notas.trim()) return
+    setGuardado(true)
+    setTimeout(() => setGuardado(false), 2500)
+  }
 
   return (
     <div className="min-h-screen bg-applik-bg p-6">
@@ -89,10 +98,20 @@ export default function DetallesCandidatoPage({ candidato, onBack, onActualizarE
             <div className="rounded-2xl bg-white p-6 shadow-sm">
               <h2 className="mb-3 font-semibold text-slate-800">Notas</h2>
               <textarea
+                value={notas}
+                onChange={(e) => { setNotas(e.target.value); setGuardado(false) }}
                 placeholder="Agrega notas sobre este candidato..."
                 rows={3}
                 className="w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-dark focus:outline-none focus:ring-2 focus:ring-blue-dark/20"
               />
+              <div className="mt-3 flex items-center justify-end gap-3">
+                {guardado && (
+                  <p className="text-sm text-teal-dark font-medium">✓ Nota guardada</p>
+                )}
+                <Button variant="primary" size="sm" onClick={handleGuardarNotas} disabled={!notas.trim()}>
+                  Guardar nota
+                </Button>
+              </div>
             </div>
 
           </div>

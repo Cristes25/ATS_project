@@ -3,7 +3,7 @@ import { createPortal } from "react-dom"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import {
   Search, MapPin, Layers, Clock, ChevronDown, ChevronLeft, ChevronRight,
-  User, Sparkles, SlidersHorizontal, ArrowLeft, Building2,
+  User, Sparkles, SlidersHorizontal, ArrowLeft, Building2, CheckCircle2, X,
 } from "lucide-react"
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -131,6 +131,11 @@ function SearchDropdown({ icon: Icon, placeholder, options }) {
     setAbierto(!abierto)
   }
 
+  const handleSelect = (o) => {
+    setValor(valor === o ? "" : o) // toggle: click mismo → deselecciona
+    setAbierto(false)
+  }
+
   return (
     <div className="border-b border-slate-100 last:border-0">
       <button
@@ -142,7 +147,16 @@ function SearchDropdown({ icon: Icon, placeholder, options }) {
         <span className={`flex-1 text-left text-sm ${valor ? "text-violet-600 font-medium" : "text-slate-400"}`}>
           {valor || placeholder}
         </span>
-        <ChevronDown className={`size-4 text-slate-300 transition-transform duration-200 ${abierto ? "rotate-180" : ""}`} />
+        {valor ? (
+          <button
+            onClick={(e) => { e.stopPropagation(); setValor("") }}
+            className="text-slate-300 hover:text-slate-500 transition-colors"
+          >
+            <X className="size-3.5" />
+          </button>
+        ) : (
+          <ChevronDown className={`size-4 text-slate-300 transition-transform duration-200 ${abierto ? "rotate-180" : ""}`} />
+        )}
       </button>
 
       {abierto && createPortal(
@@ -154,13 +168,14 @@ function SearchDropdown({ icon: Icon, placeholder, options }) {
           {options.map((o, i) => (
             <button
               key={o}
-              onClick={() => { setValor(o); setAbierto(false) }}
-              className={`flex w-full items-center px-4 py-2.5 text-sm transition-colors animate-fadeItem ${
+              onClick={() => handleSelect(o)}
+              className={`flex w-full items-center justify-between px-4 py-2.5 text-sm transition-colors animate-fadeItem ${
                 valor === o ? "bg-violet-50 text-violet-700 font-semibold" : "text-slate-600 hover:bg-slate-50"
               }`}
               style={{ animationDelay: `${i * 40}ms` }}
             >
-              {o}
+              <span>{o}</span>
+              {valor === o && <X className="size-3.5 text-violet-400" />}
             </button>
           ))}
         </div>,
@@ -220,7 +235,7 @@ function SidebarFiltros({ filtros, onToggle, onAplicar }) {
       <FiltroSeccion titulo="Nivel de Experiencia" opciones={niveles}    seleccionados={filtros.niveles}     onToggle={(v) => onToggle("niveles", v)}     />
       <button
         onClick={onAplicar}
-        className="mt-4 w-full rounded-xl bg-violet-600 py-2.5 text-sm font-semibold text-white transition-all hover:bg-violet-700 active:scale-[0.98]"
+        className="mt-4 w-full rounded-xl bg-violet-600 py-2.5 text-sm font-semibold text-white transition-all hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5 active:scale-[0.98]"
       >
         Aplicar filtros
       </button>
@@ -253,7 +268,7 @@ function JobCard({ job }) {
         </div>
         <button
           onClick={() => navigate(`/trabajo/${job.id}`)}
-          className="shrink-0 rounded-xl bg-violet-600 px-4 py-2 text-xs font-semibold text-white transition-all hover:bg-violet-700 active:scale-[0.98]"
+          className="shrink-0 rounded-xl bg-violet-600 px-4 py-2 text-xs font-semibold text-white transition-all hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5 active:scale-[0.98]"
         >
           Ver detalles
         </button>
@@ -309,10 +324,17 @@ export default function TrabajosPage() {
     return matchQ && matchC && matchU && matchT && matchN
   })
 
-  useEffect(() => { setPagina(1) }, [busqueda])
+  useEffect(() => { setPagina(1) }, [busqueda, orden])
 
-  const totalPaginas = Math.max(1, Math.ceil(resultados.length / POR_PAGINA))
-  const paginados    = resultados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
+  const ordenados = [...resultados].sort((a, b) => {
+    if (orden === "Más recientes")   return b.id - a.id         // backend: ORDER BY created_at DESC
+    if (orden === "Más relevantes")  return b.id - a.id         // backend: ORDER BY match_score DESC
+    if (orden === "Mayor salario")   return b.id - a.id         // backend: ORDER BY salary_max DESC
+    return 0
+  })
+
+  const totalPaginas = Math.max(1, Math.ceil(ordenados.length / POR_PAGINA))
+  const paginados    = ordenados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
 
   return (
     <div className="space-y-6 pb-16">
@@ -338,7 +360,7 @@ export default function TrabajosPage() {
           <SearchDropdown icon={Layers} placeholder="Categoría" options={categorias}  />
           <SearchDropdown icon={Clock}  placeholder="Modalidad" options={tiposTrabajo} />
           <div className="p-3">
-            <button className="w-full rounded-xl bg-violet-600 py-3 text-sm font-semibold text-white transition-all hover:bg-violet-700 active:scale-[0.98]">
+            <button className="w-full rounded-xl bg-violet-600 py-3 text-sm font-semibold text-white transition-all hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5 active:scale-[0.98]">
               Buscar
             </button>
           </div>

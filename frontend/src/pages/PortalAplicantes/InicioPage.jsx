@@ -183,7 +183,7 @@ export default function InicioPage() {
             <div className="p-3">
               <button
                 onClick={handleBuscar}
-                className="w-full rounded-xl bg-violet-600 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-violet-700 active:scale-[0.98]"
+                className="w-full rounded-xl bg-violet-600 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5 active:scale-[0.98]"
               >
                 Buscar
               </button>
@@ -214,7 +214,7 @@ export default function InicioPage() {
               </div>
               <button
                 onClick={() => navigate(`/trabajo/${job.id}`)}
-                className="mt-4 w-full rounded-xl bg-violet-600 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-violet-700 active:scale-[0.98]"
+                className="mt-4 w-full rounded-xl bg-violet-600 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5 active:scale-[0.98]"
               >
                 Ver puesto
               </button>
@@ -257,7 +257,7 @@ export default function InicioPage() {
               </div>
               <button
                 onClick={() => navigate(`/trabajo/${job.id}`)}
-                className="w-full rounded-xl bg-violet-600 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-violet-700 active:scale-[0.98]"
+                className="w-full rounded-xl bg-violet-600 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5 active:scale-[0.98]"
               >
                 Ver detalles
               </button>
