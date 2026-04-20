@@ -3,7 +3,7 @@ services:
     image: traefik:v3.1
     container_name: ats_proxy
     environment:
-      - DOCKER_API_VERSION=1.41
+      - DOCKER_API_VERSION=1.40
     command:
       - "--api.insecure=false"
       - "--providers.docker=true"
@@ -74,7 +74,7 @@ services:
       - ats_network
 
   postgres:
-    image: postgres:15-alpine
+    image: ankane/pgvector:v0.5.0
     container_name: ats_postgres_prod
     restart: unless-stopped
     environment:
