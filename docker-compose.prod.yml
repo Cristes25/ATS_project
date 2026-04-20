@@ -1,7 +1,9 @@
 services:
   reverse-proxy:
-    image: traefik:v2.10.7
+    image: traefik:v3.1
     container_name: ats_proxy
+    environment:
+      - DOCKER_API_VERSION=1.41
     command:
       - "--api.insecure=false"
       - "--providers.docker=true"
