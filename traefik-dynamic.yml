@@ -28,7 +28,7 @@ http:
     auth-service:
       loadBalancer:
         servers:
-          - url: "http://auth-service:3001"
+          - url: "http://auth-service:3002"
 
     job-service:
       loadBalancer:
