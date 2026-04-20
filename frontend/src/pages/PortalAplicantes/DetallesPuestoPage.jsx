@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import {
   ArrowLeft, Clock, MapPin, Bookmark, Share2, Sparkles,
@@ -67,7 +68,7 @@ function MatchBar({ porcentaje }) {
 
 // ─── Sidebar cards ────────────────────────────────────────────────────────────
 
-function SidebarContent({ trabajo }) {
+function SidebarContent({ trabajo, aplicado, onAplicar }) {
   const matchColor = trabajo.match >= 80 ? "text-teal-500" : "text-blue-500"
 
   return (
@@ -114,8 +115,16 @@ function SidebarContent({ trabajo }) {
             </div>
           ))}
         </div>
-        <button className="mt-5 w-full rounded-xl bg-violet-600 py-2.5 text-sm font-semibold text-white transition-all hover:bg-violet-700 active:scale-[0.98]">
-          Aplicar ahora
+        <button
+          onClick={onAplicar}
+          disabled={aplicado}
+          className={`mt-5 w-full rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${
+            aplicado
+              ? "bg-teal-50 text-teal-600 cursor-default"
+              : "bg-violet-600 text-white hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5"
+          }`}
+        >
+          {aplicado ? "✓ Aplicación enviada" : "Aplicar ahora"}
         </button>
       </div>
     </>
@@ -125,9 +134,27 @@ function SidebarContent({ trabajo }) {
 // ─── Página ───────────────────────────────────────────────────────────────────
 
 export default function DetallesPuestoPage() {
-  const navigate = useNavigate()
-  const { id }   = useParams()
-  const trabajo  = trabajos[Number(id)] ?? fallback
+  const navigate  = useNavigate()
+  const { id }    = useParams()
+  const trabajo   = trabajos[Number(id)] ?? fallback
+
+  const [aplicado,  setAplicado]  = useState(false)
+  const [guardado,  setGuardado]  = useState(false)
+  const [copiado,   setCopiado]   = useState(false)
+
+  const handleAplicar = () => setAplicado(true)
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: trabajo.titulo, text: `${trabajo.titulo} en ${trabajo.empresa}`, url: window.location.href })
+      } catch (_) {}
+    } else {
+      navigator.clipboard.writeText(window.location.href)
+      setCopiado(true)
+      setTimeout(() => setCopiado(false), 2000)
+    }
+  }
 
   return (
     <div className="pb-16 space-y-6">
@@ -160,21 +187,52 @@ export default function DetallesPuestoPage() {
               </span>
             </div>
           </div>
-          {/* Acciones — en mobile: fila con iconos + aplicar full width */}
+          {/* Acciones */}
           <div className="flex flex-col gap-2 sm:items-end sm:shrink-0">
             <div className="flex items-center gap-2">
-              <button className="flex size-8 items-center justify-center rounded-xl border border-slate-200 text-slate-400 transition-all hover:border-violet-300 hover:text-violet-500">
-                <Bookmark className="size-4" />
+              <button
+                onClick={() => setGuardado(v => !v)}
+                className={`flex size-8 items-center justify-center rounded-xl border transition-all ${
+                  guardado
+                    ? "border-violet-400 bg-violet-50 text-violet-500"
+                    : "border-slate-200 text-slate-400 hover:border-violet-300 hover:text-violet-500"
+                }`}
+              >
+                <Bookmark className={`size-4 ${guardado ? "fill-violet-500" : ""}`} />
               </button>
-              <button className="flex size-8 items-center justify-center rounded-xl border border-slate-200 text-slate-400 transition-all hover:border-violet-300 hover:text-violet-500">
+              <button
+                onClick={handleShare}
+                title={copiado ? "¡Copiado!" : "Copiar enlace"}
+                className={`flex size-8 items-center justify-center rounded-xl border transition-all ${
+                  copiado
+                    ? "border-teal-400 bg-teal-50 text-teal-500"
+                    : "border-slate-200 text-slate-400 hover:border-violet-300 hover:text-violet-500"
+                }`}
+              >
                 <Share2 className="size-4" />
               </button>
-              <button className="hidden sm:block rounded-xl bg-violet-600 px-5 py-2 text-sm font-semibold text-white transition-all hover:bg-violet-700 active:scale-[0.98]">
-                Aplicar
+              <button
+                onClick={handleAplicar}
+                disabled={aplicado}
+                className={`hidden sm:block rounded-xl px-5 py-2 text-sm font-semibold transition-all active:scale-[0.98] ${
+                  aplicado
+                    ? "bg-teal-50 text-teal-600 cursor-default"
+                    : "bg-violet-600 text-white hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5"
+                }`}
+              >
+                {aplicado ? "✓ Aplicado" : "Aplicar"}
               </button>
             </div>
-            <button className="sm:hidden w-full rounded-xl bg-violet-600 py-2.5 text-sm font-semibold text-white transition-all hover:bg-violet-700 active:scale-[0.98]">
-              Aplicar
+            <button
+              onClick={handleAplicar}
+              disabled={aplicado}
+              className={`sm:hidden w-full rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${
+                aplicado
+                  ? "bg-teal-50 text-teal-600 cursor-default"
+                  : "bg-violet-600 text-white hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5"
+              }`}
+            >
+              {aplicado ? "✓ Aplicado" : "Aplicar"}
             </button>
           </div>
         </div>
@@ -225,13 +283,13 @@ export default function DetallesPuestoPage() {
 
           {/* Sidebar en mobile — debajo del contenido */}
           <div className="lg:hidden space-y-4">
-            <SidebarContent trabajo={trabajo} />
+            <SidebarContent trabajo={trabajo} aplicado={aplicado} onAplicar={handleAplicar} />
           </div>
         </div>
 
         {/* ── Sidebar derecha — solo desktop ── */}
         <aside className="hidden lg:flex flex-col gap-4 w-72 shrink-0">
-          <SidebarContent trabajo={trabajo} />
+          <SidebarContent trabajo={trabajo} aplicado={aplicado} onAplicar={handleAplicar} />
         </aside>
 
       </div>

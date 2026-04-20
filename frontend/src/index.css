@@ -44,6 +44,7 @@
 @layer base {
   body {
     @apply antialiased bg-background text-foreground;
+    overflow-x: hidden;
   }
 
   /* This allows <h1 className="text-blue-600"> to actually work */

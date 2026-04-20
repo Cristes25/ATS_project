@@ -3,7 +3,7 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 const ApplicantLayout = () => {
     return (
-        <div className="flex flex-col min-h-screen font-inter overflow-x-hidden bg-white">
+        <div className="flex flex-col min-h-screen font-inter bg-white">
 
             {/* Navbar de vista de Aplicante */}
             <Navbar />

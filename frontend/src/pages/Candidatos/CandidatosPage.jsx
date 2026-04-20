@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/Card"
 import ActualizarEtapaModal from "./ActualizarEtapaModal"
 import DescartarModal from "./DescartarModal"
+import ProgramarEntrevistaModal from "./ProgramarEntrevistaModal"
+import EnviarCorreoModal from "./EnviarCorreoModal"
 import DetallesCandidatoPage from "./DetallesCandidatoPage"
 
 const filtrosOpciones = {
@@ -121,7 +123,7 @@ function MatchScoreBar({ score }) {
 }
 
 // Menú de acciones por candidato — usa portal para no quedar atrapado en overflow de la tabla
-function AccionesMenu({ pos, onActualizar, onDescartar, onClose }) {
+function AccionesMenu({ pos, onActualizar, onDescartar, onEntrevista, onCorreo, onClose }) {
   return createPortal(
     <div
       className="fixed z-50 w-52 rounded-xl border border-slate-100 bg-white py-1 shadow-lg"
@@ -135,13 +137,13 @@ function AccionesMenu({ pos, onActualizar, onDescartar, onClose }) {
         → Actualizar Etapa
       </button>
       <button
-        onClick={() => alert("Próximamente: Programar Entrevista")}
+        onClick={() => { onEntrevista(); onClose() }}
         className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
       >
         📅 Programar Entrevista
       </button>
       <button
-        onClick={() => alert("Próximamente: Enviar Correo")}
+        onClick={() => { onCorreo(); onClose() }}
         className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
       >
         ✉️ Enviar Correo
@@ -181,8 +183,10 @@ export default function CandidatosPage() {
 
   const abrirDetalles   = (c) => { setCandidato(c); setVista("detalles") }
   const volverALista    = () => { setVista("list"); setCandidato(null) }
-  const abrirEtapa      = (c) => { setCandidato(c); setModal("etapa") }
-  const abrirDescartar  = (c) => { setCandidato(c); setModal("descartar") }
+  const abrirEtapa        = (c) => { setCandidato(c); setModal("etapa") }
+  const abrirDescartar    = (c) => { setCandidato(c); setModal("descartar") }
+  const abrirEntrevista   = (c) => { setCandidato(c); setModal("entrevista") }
+  const abrirCorreo       = (c) => { setCandidato(c); setModal("correo") }
   const cerrarModal     = () => setModal(null)
 
   const confirmarEtapa = (nuevaEtapa) => {
@@ -212,6 +216,12 @@ export default function CandidatosPage() {
         {modal === "descartar" && (
           <DescartarModal candidato={candidatoActivo} onClose={cerrarModal} onConfirm={confirmarDescartar} />
         )}
+        {modal === "entrevista" && (
+          <ProgramarEntrevistaModal candidato={candidatoActivo} onClose={cerrarModal} onConfirm={cerrarModal} />
+        )}
+        {modal === "correo" && (
+          <EnviarCorreoModal candidato={candidatoActivo} onClose={cerrarModal} />
+        )}
       </>
     )
   }
@@ -225,6 +235,12 @@ export default function CandidatosPage() {
       )}
       {modal === "descartar" && (
         <DescartarModal candidato={candidatoActivo} onClose={cerrarModal} onConfirm={confirmarDescartar} />
+      )}
+      {modal === "entrevista" && (
+        <ProgramarEntrevistaModal candidato={candidatoActivo} onClose={cerrarModal} onConfirm={cerrarModal} />
+      )}
+      {modal === "correo" && (
+        <EnviarCorreoModal candidato={candidatoActivo} onClose={cerrarModal} />
       )}
 
       {/* Header */}
@@ -323,6 +339,8 @@ export default function CandidatosPage() {
                               pos={menuPos}
                               onActualizar={() => abrirEtapa(c)}
                               onDescartar={() => abrirDescartar(c)}
+                              onEntrevista={() => abrirEntrevista(c)}
+                              onCorreo={() => abrirCorreo(c)}
                               onClose={() => setMenu(null)}
                             />
                           )}
