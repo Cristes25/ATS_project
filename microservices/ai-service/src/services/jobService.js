@@ -13,19 +13,10 @@ const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
  */
 const scrapeCompanyCulture = async (url) => {
     try {
-        // Obtener el contenido HTML de la URL
         const { data } = await axios.get(url);
-
-        // Cargar HTML en cheerio para parsearlo
         const $ = cheerio.load(data);
-
-        // Eliminar etiquetas de script y estilo para limpiar el contenido
         $('script, style, noscript, svg').remove();
-
-        // Obtener todo el texto del cuerpo
         const textContent = $('body').text();
-
-        // Limpieza basica de texto (eliminar espacios en blanco y saltos de linea adicionales)
         const cleanedText = textContent.replace(/\s\s+/g, ' ').trim();
 
         if (!cleanedText) {
@@ -33,10 +24,8 @@ const scrapeCompanyCulture = async (url) => {
         }
 
         return cleanedText;
-
     } catch (error) {
         console.error(`Error scraping URL ${url}:`, error.message);
-        // Re-throw a more user-friendly error
         throw new Error(`No se pudo obtener o analizar el contenido de la URL proporcionada. Por favor, verifique si la URL es correcta y pública.`)
     }
 };
@@ -49,22 +38,27 @@ const scrapeCompanyCulture = async (url) => {
  */
 const generateDescription = async (jobTitle, companyCultureText) => {
     const prompt = `
-        Basado en la siguiente cultura y valores de la empresa, genera una descripción de trabajo atractiva y detallada para el puesto de "${jobTitle}".
+        Eres un experto en recursos humanos. Tu tarea es generar ÚNICAMENTE el texto de una descripción de trabajo profesional.
 
-        **Cultura y valores de la empresa:**
+        REGLAS ESTRICTAS:
+        - NO escribas frases introductorias como "Claro", "Aquí tienes", "Por supuesto", "A continuación" o similares.
+        - NO expliques lo que vas a hacer. Comienza DIRECTAMENTE con el título o la primera sección.
+        - Responde SOLO con el contenido de la descripción del trabajo, en formato Markdown.
+
+        Puesto: "${jobTitle}"
+
+        **Cultura y valores de la empresa (úsalos para alinear el tono y los valores del puesto):**
         "${companyCultureText}"
 
-        **Instrucciones:**
-        1.  **Tono y estilo:** El tono de la descripción debe reflejar la cultura de la empresa tal como se describe.
-        2.  **Contenido:** Debe incluir secciones para: 
-            - Una breve y atractiva introducción al puesto y la empresa.
-            - Responsabilidades clave.
-            - Cualificaciones y habilidades requeridas (Hard Skills).
-            - Cualificaciones preferidas (Soft Skills alineadas con la cultura).
-            - Un párrafo final que refuerce los valores de la empresa e invite a los candidatos a postularse.
-        3.  **Formato:** Use encabezados claros y viñetas para facilitar la lectura.
+        **Estructura requerida:**
+        1. Título atractivo del puesto y tagline de la empresa.
+        2. Sobre la empresa (máx. 2 párrafos, basado en la cultura extraída).
+        3. Responsabilidades clave (lista de viñetas).
+        4. Cualificaciones requeridas — Hard Skills (lista de viñetas).
+        5. Lo que te hará destacar — Soft Skills alineadas con la cultura (lista de viñetas).
+        6. Párrafo final de cierre que invite a postularse.
 
-        Genera solo el texto de la descripción del trabajo.
+        IMPORTANTE: Empieza directamente con el título del puesto. Sin introducciones.
     `;
 
     try {
