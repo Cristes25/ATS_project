@@ -56,7 +56,10 @@ function OrdenarDropdown({ valor, onChange }) {
   const handleToggle = () => {
     if (!abierto && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect()
-      setPos({ top: rect.bottom + 4, left: rect.left, width: Math.max(rect.width, 180) })
+      const dropWidth = Math.max(rect.width, 180)
+      const rawLeft = rect.left
+      const clampedLeft = Math.min(rawLeft, window.innerWidth - dropWidth - 8)
+      setPos({ top: rect.bottom + 4, left: Math.max(8, clampedLeft), width: dropWidth })
     }
     setAbierto(!abierto)
   }
@@ -358,10 +361,18 @@ export default function TrabajosPage() {
   useEffect(() => { setPagina(1) }, [busqueda, orden])
 
   const ordenados = [...resultados].sort((a, b) => {
-    if (orden === "Más recientes")   return b.id - a.id         // backend: ORDER BY created_at DESC
-    if (orden === "Más relevantes")  return b.id - a.id         // backend: ORDER BY match_score DESC
-    if (orden === "Mayor salario")   return b.id - a.id         // backend: ORDER BY salary_max DESC
-    return 0
+    if (orden === "Más recientes") {
+      const da = new Date(a.createdAt ?? 0).getTime()
+      const db = new Date(b.createdAt ?? 0).getTime()
+      return db - da || b.id - a.id
+    }
+    if (orden === "Mayor salario") {
+      const sa = parseFloat(a.salary_max ?? a.salario ?? 0)
+      const sb = parseFloat(b.salary_max ?? b.salario ?? 0)
+      return sb - sa
+    }
+    // Más relevantes: por id descendente (proxy de match score hasta tener vector)
+    return b.id - a.id
   })
 
   const totalPaginas = Math.max(1, Math.ceil(ordenados.length / POR_PAGINA))
