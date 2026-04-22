@@ -72,35 +72,39 @@ function MatchBar({ porcentaje }) {
 // ─── Sidebar cards ────────────────────────────────────────────────────────────
 
 function SidebarContent({ trabajo, aplicado, onAplicar }) {
-  const matchColor = trabajo.match >= 80 ? "text-teal-500" : "text-blue-500"
+  const matchColor = (trabajo.match ?? 0) >= 80 ? "text-teal-500" : "text-blue-500"
 
   return (
     <>
-      {/* Match con tu perfil */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="size-4 text-violet-500" />
-          <span className="text-sm font-semibold text-slate-800">Match con tu perfil</span>
+      {/* Match con tu perfil — solo si hay datos de match */}
+      {trabajo.match != null && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="size-4 text-violet-500" />
+            <span className="text-sm font-semibold text-slate-800">Match con tu perfil</span>
+          </div>
+          <div className="flex items-end gap-2 mb-2">
+            <span className="text-3xl font-bold text-slate-800">{trabajo.match}%</span>
+            <span className={`mb-1 text-sm font-semibold ${matchColor}`}>{trabajo.matchLabel}</span>
+          </div>
+          <MatchBar porcentaje={trabajo.match} />
+          {trabajo.matchItems?.length > 0 && (
+            <ul className="mt-4 space-y-3">
+              {trabajo.matchItems.map((item, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  {item.tipo === "ok"
+                    ? <CheckCircle2 className="size-3.5 shrink-0 mt-0.5 text-teal-500" />
+                    : <AlertCircle  className="size-3.5 shrink-0 mt-0.5 text-amber-400" />
+                  }
+                  <span className={`text-xs leading-relaxed ${item.tipo === "ok" ? "text-teal-600" : "text-amber-600"}`}>
+                    {item.texto}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-        <div className="flex items-end gap-2 mb-2">
-          <span className="text-3xl font-bold text-slate-800">{trabajo.match}%</span>
-          <span className={`mb-1 text-sm font-semibold ${matchColor}`}>{trabajo.matchLabel}</span>
-        </div>
-        <MatchBar porcentaje={trabajo.match} />
-        <ul className="mt-4 space-y-3">
-          {trabajo.matchItems.map((item, i) => (
-            <li key={i} className="flex items-start gap-2">
-              {item.tipo === "ok"
-                ? <CheckCircle2 className="size-3.5 shrink-0 mt-0.5 text-teal-500" />
-                : <AlertCircle  className="size-3.5 shrink-0 mt-0.5 text-amber-400" />
-              }
-              <span className={`text-xs leading-relaxed ${item.tipo === "ok" ? "text-teal-600" : "text-amber-600"}`}>
-                {item.texto}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      )}
 
       {/* Job Overview */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -109,26 +113,14 @@ function SidebarContent({ trabajo, aplicado, onAplicar }) {
           {[
             { label: "Título",       valor: trabajo.titulo     },
             { label: "Categoría",    valor: trabajo.categoria  },
-            { label: "Experiencia",  valor: trabajo.experiencia },
             { label: "Fecha límite", valor: trabajo.fechaLimite },
-          ].map(({ label, valor }) => (
+          ].filter(f => f.valor).map(({ label, valor }) => (
             <div key={label}>
               <p className="text-xs text-slate-400">{label}</p>
               <p className="text-sm font-medium text-slate-700">{valor}</p>
             </div>
           ))}
         </div>
-        <button
-          onClick={onAplicar}
-          disabled={aplicado}
-          className={`mt-5 w-full rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.98] ${
-            aplicado
-              ? "bg-teal-50 text-teal-600 cursor-default"
-              : "bg-violet-600 text-white hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5"
-          }`}
-        >
-          {aplicado ? "✓ Aplicación enviada" : "Aplicar ahora"}
-        </button>
       </div>
     </>
   )
@@ -142,39 +134,55 @@ export default function DetallesPuestoPage() {
 
   const [trabajo,   setTrabajo]   = useState(null)
   const [jobToken,  setJobToken]  = useState(null)
+  const [cargando,  setCargando]  = useState(false)
+  const [noDisp,    setNoDisp]    = useState(false)
   const [guardado,  setGuardado]  = useState(false)
   const [copiado,   setCopiado]   = useState(false)
   const [aplicado,  setAplicado]  = useState(false)
 
   useEffect(() => {
     if (UUID_RE.test(id)) {
-      // Es un token real — cargar desde el backend
       setJobToken(id)
+      setCargando(true)
       fetch(`${import.meta.env.VITE_JOB_SERVICE_URL}/api/v1/jobs/public/${id}`)
-        .then(r => r.json())
+        .then(r => { if (!r.ok) throw new Error("not found"); return r.json() })
         .then(data => {
-          if (data.title) {
-            setTrabajo({
-              titulo:          data.title,
-              empresa:         data.Department?.name ?? "",
-              ubicacion:       "Nicaragua",
-              categoria:       data.Department?.name ?? "",
-              publicado:       `hace ${Math.floor((Date.now() - new Date(data.createdAt)) / 86400000)} días`,
-              fechaLimite:     data.closes_at ? new Date(data.closes_at).toLocaleDateString("es-NI") : "Abierta",
-              salario:         `${Number(data.salary_min).toLocaleString("es")} – ${Number(data.salary_max).toLocaleString("es")} ${data.currency ?? "NIO"}`,
-              descripcion:     data.description,
-              experiencia_desc: [],
-              requisitos:      data.requirements ? data.requirements.split("\n").filter(Boolean) : [],
-              match: null,
-            })
-          }
+          setTrabajo({
+            titulo:           data.title,
+            empresa:          data.Department?.name ?? "",
+            ubicacion:        "Nicaragua",
+            categoria:        data.Department?.name ?? "",
+            publicado:        `hace ${Math.floor((Date.now() - new Date(data.createdAt)) / 86400000)} días`,
+            fechaLimite:      data.closes_at ? new Date(data.closes_at).toLocaleDateString("es") : "Abierta",
+            salario:          `${Number(data.salary_min).toLocaleString("es")} – ${Number(data.salary_max).toLocaleString("es")} ${data.currency ?? "NIO"}`,
+            descripcion:      data.description,
+            experiencia_desc: [],
+            requisitos:       data.requirements ? data.requirements.split("\n").filter(Boolean) : [],
+            match:            null,
+          })
         })
-        .catch(() => setTrabajo(fallback))
+        .catch(() => setNoDisp(true))
+        .finally(() => setCargando(false))
     } else {
-      // ID entero — usar datos mock
       setTrabajo(trabajos[Number(id)] ?? fallback)
     }
   }, [id])
+
+  if (cargando) return (
+    <div className="flex items-center justify-center py-32 text-sm text-slate-400">Cargando vacante...</div>
+  )
+
+  if (noDisp) return (
+    <div className="pb-16 space-y-6">
+      <button onClick={() => navigate("/trabajos")} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-violet-600 transition-colors">
+        <ArrowLeft className="size-4" /> Volver a todos los trabajos
+      </button>
+      <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center">
+        <p className="text-slate-500 font-medium">Esta vacante no está disponible.</p>
+        <p className="text-sm text-slate-400 mt-1">Es posible que haya sido cerrada o aún no esté publicada.</p>
+      </div>
+    </div>
+  )
 
   const dataTrabajo = trabajo ?? fallback
 
@@ -320,7 +328,7 @@ export default function DetallesPuestoPage() {
           </section>
 
           {/* ── CV Upload ── */}
-          <section>
+          {jobToken && <section>
             <h2 className="mb-3 text-base font-bold text-slate-800">Aplicar a esta posición</h2>
             <div className="rounded-xl border border-slate-200 bg-white p-5">
               <CvDropzone
@@ -328,7 +336,7 @@ export default function DetallesPuestoPage() {
                 onSuccess={() => setAplicado(true)}
               />
             </div>
-          </section>
+          </section>}
 
           {/* Sidebar en mobile — debajo del contenido */}
           <div className="lg:hidden space-y-4">
