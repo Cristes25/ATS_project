@@ -6,6 +6,7 @@ import { Avatar } from "@/components/ui/Avatar"
 import { StageBadge } from "@/components/ui/StageBadge"
 import { Button } from "@/components/ui/button"
 import ActividadRecientePage from "./ActividadRecientePage"
+import { fetchJobStats, fetchJobs } from "@/api/jobs"
 
 const actividadReciente = [
   { texto: "Ana Martínez solicitó un cambio de etapa",           tiempo: "Hace 5 min"   },
@@ -14,18 +15,14 @@ const actividadReciente = [
   { texto: "Entrevista programada para David Espinoza",          tiempo: "Hace 2 horas" },
 ]
 
-const posicionesAbiertas = [
-  { titulo: "Gerente de Ventas",      departamento: "Gerencia",   candidatos: 12, estado: "Activa"  },
-  { titulo: "Marketing Specialist",   departamento: "Marketing",  candidatos: 8,  estado: "Activa"  },
-  { titulo: "Contador Senior",        departamento: "Finanzas",   candidatos: 5,  estado: "Pausada" },
-]
-
 const topCandidatos = [
   { id: 1, nombre: "Osvaldo Rodriguez", posicion: "Gerente de Ventas",      score: 94, etapa: "Recibido"        },
   { id: 2, nombre: "Endy Gonzalez",     posicion: "Gerente de Operaciones", score: 86, etapa: "Analizado"       },
   { id: 3, nombre: "Martha Torres",     posicion: "Desarrollador Frontend", score: 89, etapa: "Seleccionado"    },
   { id: 4, nombre: "David Espinoza",    posicion: "Contador Senior",        score: 80, etapa: "Bajo Entrevista" },
 ]
+
+const STATUS_LABEL = { published: "Activa", paused: "Pausada", closed: "Cerrada", draft: "Borrador" }
 
 function MatchScoreBar({ score }) {
   return (
@@ -44,15 +41,31 @@ function MatchScoreBar({ score }) {
 export default function DashboardPage() {
   const navigate  = useNavigate()
   const location  = useLocation()
-  const [vista, setVista] = useState("dashboard")
+  const [vista, setVista]   = useState("dashboard")
+  const [stats, setStats]   = useState(null)
+  const [jobs, setJobs]     = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setVista("dashboard")
   }, [location])
 
+  useEffect(() => {
+    const token = localStorage.getItem("applik_token")
+    Promise.all([fetchJobStats(token), fetchJobs(token)])
+      .then(([s, j]) => {
+        setStats(s)
+        setJobs(j.slice(0, 3))
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
   if (vista === "actividad") {
     return <ActividadRecientePage onBack={() => setVista("dashboard")} />
   }
+
+  const statVal = (val) => loading ? "..." : val ?? "--"
 
   return (
     <div className="space-y-6 bg-applik-bg min-h-screen">
@@ -65,10 +78,10 @@ export default function DashboardPage() {
 
       {/* StatCards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        <StatCard label="Candidatos"        value="12" icon={Users}    iconColor="text-blue-dark"    iconBg="bg-blue-dark/10"    />
-        <StatCard label="Vacantes"          value="48" icon={Briefcase} iconColor="text-purple-dark" iconBg="bg-purple-dark/10"  />
-        <StatCard label="Nuevos Candidatos" value="6"  icon={UserPlus} iconColor="text-teal-dark"    iconBg="bg-teal-dark/10"    />
-        <StatCard label="En Proceso"        value="5"  icon={Clock}    iconColor="text-blue-light"   iconBg="bg-blue-light/10"   />
+        <StatCard label="Candidatos"        value="--"                        icon={Users}    iconColor="text-blue-dark"    iconBg="bg-blue-dark/10"    />
+        <StatCard label="Vacantes"          value={statVal(stats?.published)} icon={Briefcase} iconColor="text-purple-dark" iconBg="bg-purple-dark/10"  />
+        <StatCard label="Nuevos Candidatos" value="--"                        icon={UserPlus} iconColor="text-teal-dark"    iconBg="bg-teal-dark/10"    />
+        <StatCard label="En Proceso"        value={statVal(stats?.paused)}    icon={Clock}    iconColor="text-blue-light"   iconBg="bg-blue-light/10"   />
       </div>
 
       {/* Actividad Reciente + Posiciones Abiertas */}
@@ -103,21 +116,27 @@ export default function DashboardPage() {
               <button onClick={() => navigate("/vacantes")} className="text-xs text-blue-dark hover:underline">Ver todo</button>
             </div>
             <div className="space-y-3">
-              {posicionesAbiertas.map((pos, i) => (
-                <div key={i} className="flex items-center justify-between rounded-xl bg-slate-50 p-3 gap-2">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-slate-800 truncate">{pos.titulo}</p>
-                    <p className="text-xs text-slate-400">{pos.departamento} · {pos.candidatos} candidatos</p>
-                  </div>
-                  <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${
-                    pos.estado === "Activa"
-                      ? "bg-teal-light/20 text-teal-dark"
-                      : "bg-slate-200 text-slate-500"
-                  }`}>
-                    {pos.estado}
-                  </span>
-                </div>
-              ))}
+              {loading ? (
+                <p className="text-sm text-slate-400">...</p>
+              ) : (
+                jobs.map((job) => {
+                  const label  = STATUS_LABEL[job.status] ?? job.status
+                  const active = job.status === "published"
+                  return (
+                    <div key={job.id} className="flex items-center justify-between rounded-xl bg-slate-50 p-3 gap-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-slate-800 truncate">{job.title}</p>
+                        <p className="text-xs text-slate-400">{job.department?.name} · {job.application_count} candidatos</p>
+                      </div>
+                      <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${
+                        active ? "bg-teal-light/20 text-teal-dark" : "bg-slate-200 text-slate-500"
+                      }`}>
+                        {label}
+                      </span>
+                    </div>
+                  )
+                })
+              )}
             </div>
           </CardContent>
         </Card>
