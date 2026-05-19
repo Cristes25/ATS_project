@@ -2,9 +2,11 @@ import { useState } from "react"
 import { ArrowLeft, Eye, EyeOff } from "lucide-react"
 import { Avatar } from "@/components/ui/Avatar"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/context/AuthContext"
 
 export default function PerfilPage({ onBack }) {
-  const [nombre,           setNombre]           = useState("Cristiana Espinoza")
+  const { user } = useAuth()
+  const [nombre,           setNombre]           = useState(user?.name ?? "")
   const [contrasena,       setContrasena]       = useState("")
   const [confirmar,        setConfirmar]        = useState("")
   const [verContrasena,    setVerContrasena]    = useState(false)
@@ -45,8 +47,8 @@ export default function PerfilPage({ onBack }) {
 
           {/* Avatar */}
           <div className="rounded-2xl bg-white p-6 shadow-sm flex flex-col items-center gap-4">
-            <Avatar name="Cristiana Espinoza" size="lg" className="size-28 text-3xl" />
-            <p className="font-semibold text-slate-800">Cristiana Espinoza</p>
+            <Avatar name={user?.name ?? ""} size="lg" className="size-28 text-3xl" />
+            <p className="font-semibold text-slate-800">{user?.name}</p>
             <Button variant="primary" size="sm" className="w-full">
               Editar foto de perfil
             </Button>
@@ -69,7 +71,7 @@ export default function PerfilPage({ onBack }) {
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-700">Empresa</label>
               <input
-                value="Keiser University"
+                value={user?.tenant_name ?? ""}
                 readOnly
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-400 cursor-not-allowed"
               />
@@ -79,7 +81,7 @@ export default function PerfilPage({ onBack }) {
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-700">Correo Electrónico</label>
               <input
-                value="c.espinoza@gmail.com"
+                value={user?.email ?? ""}
                 readOnly
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-400 cursor-not-allowed"
               />
