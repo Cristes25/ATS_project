@@ -28,6 +28,16 @@ const rubrosLaborales = [
   "Varios",
 ]
 
+function stripMarkdown(text) {
+  return text
+    .replace(/#{1,6}\s+/gm, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/^[-*+]\s+/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 export default function VacanteFormModal({ vacante = null, onClose, onSave }) {
   const isEditing = vacante !== null
 
@@ -54,31 +64,11 @@ export default function VacanteFormModal({ vacante = null, onClose, onSave }) {
 
   useEffect(() => {
     if (!token) return
-    const DEPT_URL = `${import.meta.env.VITE_JOB_SERVICE_URL}/api/v1/departments`
-
-    fetch(DEPT_URL, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${import.meta.env.VITE_JOB_SERVICE_URL}/api/v1/departments`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then(r => r.json())
-      .then(async (data) => {
-        const existing = Array.isArray(data) ? data : []
-        setDepartments(existing)
-
-        const existingNames = new Set(existing.map(d => d.name))
-        const missing = rubrosLaborales.filter(r => !existingNames.has(r))
-
-        if (missing.length > 0) {
-          const created = await Promise.all(
-            missing.map(name =>
-              fetch(DEPT_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ name }),
-              }).then(r => r.ok ? r.json() : null)
-            )
-          )
-          const newDepts = created.filter(Boolean)
-          setDepartments(prev => [...prev, ...newDepts])
-        }
-      })
+      .then(data => setDepartments(Array.isArray(data) ? data : []))
       .catch(() => {})
   }, [])
 
@@ -100,7 +90,7 @@ export default function VacanteFormModal({ vacante = null, onClose, onSave }) {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message ?? "Error al generar")
-      setDescripcion(data.data)
+      setDescripcion(stripMarkdown(data.data))
     } catch (err) {
       setErrorIA(err.message ?? "No se pudo generar la descripción. Intenta de nuevo.")
     } finally {
