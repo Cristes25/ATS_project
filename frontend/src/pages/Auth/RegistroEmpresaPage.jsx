@@ -19,6 +19,7 @@ const RegistroEmpresaPage = () => {
     const [showPassword,   setShowPassword]   = useState(false);
     const [showConfirmar,  setShowConfirmar]  = useState(false);
     const [error,          setError]          = useState("");
+    const [errorPassword,  setErrorPassword]  = useState("");
     const [loading,        setLoading]        = useState(false);
 
     const { login } = useAuth();
@@ -26,9 +27,10 @@ const RegistroEmpresaPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (password !== confirmar) { setError("Las contraseñas no coinciden"); return; }
+        if (password !== confirmar) { setErrorPassword("Las contraseñas no coinciden"); return; }
         if (!law787) { setError("Debes aceptar los términos de la Ley 787"); return; }
         setError("");
+        setErrorPassword("");
         setLoading(true);
         try {
             const { data } = await registerOrganization({
@@ -178,9 +180,9 @@ const RegistroEmpresaPage = () => {
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
                                 <input type={showConfirmar ? "text" : "password"} placeholder="Repite tu contraseña" value={confirmar}
-                                    onChange={(e) => { setConfirmar(e.target.value); setError("") }} required
+                                    onChange={(e) => { setConfirmar(e.target.value); setErrorPassword("") }} required
                                     className={`w-full border rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 transition-all ${
-                                        error ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:ring-blue-400 focus:border-transparent"
+                                        errorPassword ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:ring-blue-400 focus:border-transparent"
                                     }`} />
                                 <button type="button" onClick={() => setShowConfirmar(v => !v)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" tabIndex={-1}>
@@ -208,7 +210,7 @@ const RegistroEmpresaPage = () => {
                             />
                         )}
 
-                        {error && <p className="text-xs text-red-500">{error}</p>}
+                        {(errorPassword || error) && <p className="text-xs text-red-500">{errorPassword || error}</p>}
 
                         <button type="submit" disabled={loading}
                             className="w-full bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-200 hover:-translate-y-0.5 text-white font-semibold py-2.5 rounded-xl transition-all duration-200 active:scale-[0.98] text-sm mt-2 disabled:opacity-60 disabled:pointer-events-none">

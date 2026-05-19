@@ -29,6 +29,7 @@ import TerminosPage from './pages/Legal/TerminosPage';
 import ContactoPage from './pages/Legal/ContactoPage';
 import LandingPage from './pages/Landing/LandingPage';
 import AceptarInvitacionPage from './pages/Auth/AceptarInvitacionPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -80,7 +81,7 @@ function App() {
           {/* Dev only — personas de prueba */}
 
           {/* Crear página de Not Found  */}
-          <Route path='*' element={<div>Not Found aquí</div>}/>
+          <Route path='*' element={<NotFoundPage />}/>
         </Routes>
       </BrowserRouter>
       </AuthProvider>

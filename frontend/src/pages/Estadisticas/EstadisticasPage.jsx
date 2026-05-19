@@ -318,7 +318,6 @@ export default function EstadisticasPage() {
               <p className="text-sm font-semibold text-slate-800">Sugerencias de la IA</p>
               <p className="text-xs text-slate-400">Basadas en los tiempos del proceso actual</p>
             </div>
-            <span className="ml-auto text-xs text-slate-400 bg-slate-100 rounded-full px-2.5 py-1">Mock — conectar con AI service</span>
           </div>
           <div className="space-y-3">
             {sugerenciasIA.map((s, i) => {

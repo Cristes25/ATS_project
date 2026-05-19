@@ -218,7 +218,7 @@ export default function CandidatosPage() {
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${localStorage.getItem("applik_token")}`,
             },
             body: JSON.stringify({ stage: nuevaEtapa }),
           }
