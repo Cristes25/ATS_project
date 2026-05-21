@@ -42,22 +42,22 @@ export default function DashboardPage() {
   const navigate  = useNavigate()
   const location  = useLocation()
   const [vista, setVista]   = useState("dashboard")
-  const [stats, setStats]   = useState(null)
-  const [jobs, setJobs]     = useState([])
+  const [stats, setStats]     = useState(null)
+  const [jobs, setJobs]       = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError]     = useState("")
 
   useEffect(() => {
     setVista("dashboard")
   }, [location])
 
   useEffect(() => {
-    const token = localStorage.getItem("applik_token")
-    Promise.all([fetchJobStats(token), fetchJobs(token)])
+    Promise.all([fetchJobStats(), fetchJobs()])
       .then(([s, j]) => {
         setStats(s)
         setJobs(j.slice(0, 3))
       })
-      .catch(() => {})
+      .catch(err => setError(err.message))
       .finally(() => setLoading(false))
   }, [])
 
@@ -75,6 +75,10 @@ export default function DashboardPage() {
         <h1 className="text-xl md:text-2xl font-bold text-slate-800">Panel Principal</h1>
         <p className="text-sm text-slate-400">Bienvenido de vuelta, aquí está el resumen de hoy</p>
       </div>
+
+      {error && (
+        <p className="text-xs text-red-500 bg-red-50 rounded-lg px-4 py-2">{error}</p>
+      )}
 
       {/* StatCards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">

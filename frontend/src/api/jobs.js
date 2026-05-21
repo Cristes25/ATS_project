@@ -1,17 +1,35 @@
-const BASE = import.meta.env.VITE_JOB_SERVICE_URL
+import { apiFetch } from "./client"
 
-export async function fetchJobStats(token) {
-  const res = await fetch(`${BASE}/api/v1/jobs/stats`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  if (!res.ok) throw new Error("stats fetch failed")
-  return res.json()
+const JOB = import.meta.env.VITE_JOB_SERVICE_URL
+
+export async function fetchJobs() {
+  const data = await apiFetch(`${JOB}/api/v1/jobs`)
+  return Array.isArray(data.data) ? data.data : data
 }
 
-export async function fetchJobs(token) {
-  const res = await fetch(`${BASE}/api/v1/jobs`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  if (!res.ok) throw new Error("jobs fetch failed")
-  return res.json()
-}
+export const fetchJobStats = () =>
+  apiFetch(`${JOB}/api/v1/jobs/stats`)
+
+export const fetchJobById = (id) =>
+  apiFetch(`${JOB}/api/v1/jobs/${id}`)
+
+export const createJob = (body) =>
+  apiFetch(`${JOB}/api/v1/jobs`, { method: "POST", body: JSON.stringify(body) })
+
+export const updateJob = (id, body) =>
+  apiFetch(`${JOB}/api/v1/jobs/${id}`, { method: "PATCH", body: JSON.stringify(body) })
+
+export const deleteJob = (id) =>
+  apiFetch(`${JOB}/api/v1/jobs/${id}`, { method: "DELETE" })
+
+export const fetchDepartments = () =>
+  apiFetch(`${JOB}/api/v1/departments`)
+
+export const createDepartment = (name) =>
+  apiFetch(`${JOB}/api/v1/departments`, { method: "POST", body: JSON.stringify({ name }) })
+
+export const fetchPublicJobs = (tenantId) =>
+  apiFetch(`${JOB}/api/v1/jobs/public?tenant_id=${tenantId}`, { auth: false })
+
+export const fetchPublicJobById = (id) =>
+  apiFetch(`${JOB}/api/v1/jobs/public/${id}`, { auth: false })
