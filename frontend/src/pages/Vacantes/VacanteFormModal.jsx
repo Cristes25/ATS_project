@@ -46,7 +46,6 @@ export default function VacanteFormModal({ vacante = null, onClose, onSave }) {
   const [ubicacion,     setUbicacion]     = useState(vacante?.location           ?? "")
   const [contrato,      setContrato]      = useState(vacante?.contract_type      ?? "")
   const [descripcion,   setDescripcion]   = useState(vacante?.description        ?? "")
-  const [experiencia,   setExperiencia]   = useState(vacante?.experience         ?? "")
   const [requisitos,    setRequisitos]    = useState(vacante?.requirements       ?? "")
   const [salarioMin,    setSalarioMin]    = useState(vacante?.salary_min         ?? "")
   const [salarioMax,    setSalarioMax]    = useState(vacante?.salary_max         ?? "")
@@ -275,20 +274,12 @@ export default function VacanteFormModal({ vacante = null, onClose, onSave }) {
           </div>
 
           <Textarea
-            label="Experiencia Requerida"
-            placeholder="Especifica los años y tipo de experiencia necesaria"
-            value={experiencia}
-            onChange={(e) => setExperiencia(e.target.value)}
-            rows={3}
-          />
-
-          <Textarea
             label="Requisitos"
             required
-            placeholder="Lista los requisitos educativos, técnicos y habilidades necesarias"
+            placeholder={"Ej:\n- 2+ años con React y Node.js\n- Experiencia con bases de datos SQL\n- Nivel de inglés intermedio\n- Trabajo en equipo y comunicación efectiva"}
             value={requisitos}
             onChange={(e) => setRequisitos(e.target.value)}
-            rows={3}
+            rows={5}
           />
 
           {/* Rango Salarial */}
