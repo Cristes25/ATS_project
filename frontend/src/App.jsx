@@ -29,6 +29,7 @@ import TerminosPage from './pages/Legal/TerminosPage';
 import ContactoPage from './pages/Legal/ContactoPage';
 import LandingPage from './pages/Landing/LandingPage';
 import AceptarInvitacionPage from './pages/Auth/AceptarInvitacionPage';
+import ResetPasswordPage from './pages/Auth/ResetPasswordPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
@@ -78,6 +79,7 @@ function App() {
           <Route path='/registrar-empresa' element={<RegistroEmpresaPage />} />
           <Route path='/recuperar-contrasena' element={<RecuperarContrasenaPage />} />
           <Route path='/register/reclutador' element={<AceptarInvitacionPage />} />
+          <Route path='/reset-password' element={<ResetPasswordPage />} />
           {/* Dev only — personas de prueba */}
 
           {/* Crear página de Not Found  */}
