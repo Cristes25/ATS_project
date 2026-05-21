@@ -6,21 +6,6 @@ import {
   User, Sparkles, SlidersHorizontal, ArrowLeft, Building2, CheckCircle2, X,
 } from "lucide-react"
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
-
-const trabajos = [
-  { id: 1,  titulo: "Gerente de Ventas",      empresa: "Casa Peñas",   ubicacion: "Managua", tipo: "Full Time",  categoria: "Marketing",   nivel: "Senior",   match: "Coincide con tu experiencia en ventas"           },
-  { id: 2,  titulo: "Analista de Mercado",    empresa: "Managua Co.",  ubicacion: "Managua", tipo: "Full Time",  categoria: "Marketing",   nivel: "Mid-Level", match: "Coincide con tu experiencia analítica"           },
-  { id: 3,  titulo: "Diseñador UX",           empresa: "Stripe",       ubicacion: "Remoto",  tipo: "Full Time",  categoria: "Tecnología",  nivel: "Mid-Level", match: "Coincide con tu experiencia con Figma y Adobe"   },
-  { id: 4,  titulo: "Creador de Contenido",   empresa: "Cafe Los Pinos", ubicacion: "Managua", tipo: "Part-Time", categoria: "Marketing",   nivel: "Junior",   match: "Tiene habilidades de reclutamiento para tu perfil" },
-  { id: 5,  titulo: "Diseñador UX",           empresa: "Stripe",       ubicacion: "Remoto",  tipo: "Part-Time",  categoria: "Diseño",      nivel: "Junior",   match: "Coincide con tu experiencia con Figma y Adobe"   },
-  { id: 6,  titulo: "Creador de Contenido",   empresa: "Stripe",       ubicacion: "Remoto",  tipo: "Part-Time",  categoria: "Marketing",   nivel: "Senior",   match: "Coincide con tu experiencia en medios digitales"  },
-  { id: 7,  titulo: "Ingeniero en Software",  empresa: "Claro",        ubicacion: "Managua", tipo: "Full Time",  categoria: "Tecnología",  nivel: "Senior",   match: "Coincide con tu perfil técnico"                  },
-  { id: 8,  titulo: "Analista Financiero",    empresa: "BAC",          ubicacion: "Managua", tipo: "Full Time",  categoria: "Finanzas",    nivel: "Mid-Level", match: "Coincide con tu experiencia en finanzas"         },
-  { id: 9,  titulo: "Product Manager",        empresa: "Tigo",         ubicacion: "Managua", tipo: "Full Time",  categoria: "Tecnología",  nivel: "Senior",   match: "Coincide con tu experiencia en gestión"          },
-  { id: 10, titulo: "Community Manager",      empresa: "Pepsi",        ubicacion: "Managua", tipo: "Remoto",     categoria: "Marketing",   nivel: "Junior",   match: "Coincide con tu experiencia en marketing digital"   },
-]
-
 const ubicaciones  = ["Managua", "León", "Granada", "Masaya"]
 const categorias   = ["Marketing", "Ventas", "Tecnología", "Finanzas"]
 const tiposTrabajo = ["Full-Time", "Part-Time", "Remoto"]
@@ -345,7 +330,7 @@ export default function TrabajosPage() {
     setFiltrosMobile(false)
   }
 
-  const listaBase = cargando ? [] : vacantesReales.length > 0 ? vacantesReales : trabajos
+  const listaBase = vacantesReales
 
   const resultados = listaBase.filter((j) => {
     const titulo  = j.titulo ?? j.title ?? ""
@@ -443,7 +428,11 @@ export default function TrabajosPage() {
           </div>
 
           {/* Grid de trabajos */}
-          {paginados.length > 0 ? (
+          {cargando ? (
+            <div className="flex items-center justify-center py-20 rounded-2xl border border-slate-200 bg-white">
+              <p className="text-sm text-slate-400">Cargando vacantes...</p>
+            </div>
+          ) : paginados.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {paginados.map((job) => <JobCard key={job.id} job={job} />)}
             </div>
