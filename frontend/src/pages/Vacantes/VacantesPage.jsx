@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Plus, Users, Pencil } from "lucide-react"
+import { Plus, Users, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SearchInput } from "@/components/ui/Input"
 import { Card, CardContent } from "@/components/ui/Card"
@@ -39,6 +39,15 @@ export default function VacantesPage() {
   const volverALista  = () => { setVista("list"); setVacante(null) }
   const abrirEditar   = () => setModal("editar")
   const cerrarModal   = () => { setModal(null); cargarVacantes() }
+
+  const eliminarVacante = async (vacante) => {
+    if (!window.confirm(`¿Eliminar la vacante "${vacante.title}"? Esta acción no se puede deshacer.`)) return
+    await fetch(`${import.meta.env.VITE_JOB_SERVICE_URL}/api/v1/jobs/${vacante.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => {})
+    cargarVacantes()
+  }
 
   if (vista === "detalles") {
     return (
@@ -124,13 +133,23 @@ export default function VacantesPage() {
                     </td>
 
                     <td className="py-3 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => { setVacante(v); setModal("editar") }}
-                      >
-                        <Pencil /> Editar
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => { setVacante(v); setModal("editar") }}
+                        >
+                          <Pencil /> Editar
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => eliminarVacante(v)}
+                          className="text-red-400 hover:text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 />
+                        </Button>
+                      </div>
                     </td>
 
                   </tr>
