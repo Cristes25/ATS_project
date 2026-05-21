@@ -123,7 +123,7 @@ const RegistroEmpresaPage = () => {
                             <div className="relative">
                                 <Hash className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
                                 <input type="text" placeholder="Ej. J0310000000001" value={ruc}
-                                    onChange={(e) => setRuc(e.target.value)} required
+                                    onChange={(e) => setRuc(e.target.value)} required minLength={14} maxLength={14} pattern="J\d{13}"
                                     className="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all" />
                             </div>
                             <p className="mt-1 text-xs text-slate-400">Registro Único del Contribuyente (empieza con J, 14 caracteres)</p>
@@ -165,7 +165,7 @@ const RegistroEmpresaPage = () => {
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
                                 <input type={showPassword ? "text" : "password"} placeholder="Mínimo 8 caracteres" value={password}
-                                    onChange={(e) => setPassword(e.target.value)} required
+                                    onChange={(e) => setPassword(e.target.value)} required minLength={8}
                                     className="w-full border border-slate-200 rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all" />
                                 <button type="button" onClick={() => setShowPassword(v => !v)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" tabIndex={-1}>
@@ -180,7 +180,7 @@ const RegistroEmpresaPage = () => {
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
                                 <input type={showConfirmar ? "text" : "password"} placeholder="Repite tu contraseña" value={confirmar}
-                                    onChange={(e) => { setConfirmar(e.target.value); setErrorPassword("") }} required
+                                    onChange={(e) => { setConfirmar(e.target.value); setErrorPassword("") }} required minLength={8}
                                     className={`w-full border rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 transition-all ${
                                         errorPassword ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:ring-blue-400 focus:border-transparent"
                                     }`} />

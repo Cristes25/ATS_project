@@ -8,14 +8,12 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     if (loading) return <div>Cargando...</div>;
 
     if (!user) {
-        console.log("Usuario no registrado, regresando a /login ...");
         return (
             <Navigate to="/login" />
         );
     } 
 
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-        console.log(`Acceso denegado: El rol: ${user.role} no tiene permiso`);
         return <Navigate to={user.role === "reclutador" ? "/dashboard" : "/"} replace />
     }
 

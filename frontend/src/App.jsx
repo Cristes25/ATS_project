@@ -1,10 +1,5 @@
-import { useState } from 'react'
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import VacantesPage from './pages/Vacantes/VacantesPage';
@@ -33,8 +28,6 @@ import ResetPasswordPage from './pages/Auth/ResetPasswordPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <AuthProvider>
       <BrowserRouter>

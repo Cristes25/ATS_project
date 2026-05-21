@@ -138,6 +138,7 @@ export default function AceptarInvitacionPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={8}
                   className="w-full border border-slate-200 rounded-xl px-3 pr-10 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition-all"
                 />
                 <button type="button" onClick={() => setMostrarPass(!mostrarPass)}

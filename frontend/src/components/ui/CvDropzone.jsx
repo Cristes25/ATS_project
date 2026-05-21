@@ -47,6 +47,15 @@ export default function CvDropzone({ jobToken, onSuccess }) {
       setError("Solo se aceptan archivos PDF o TXT")
       return
     }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("El archivo no puede superar 5 MB")
+      return
+    }
+    const validMimes = ["application/pdf", "text/plain"]
+    if (file.type && !validMimes.includes(file.type)) {
+      setError("Solo se aceptan archivos PDF o TXT")
+      return
+    }
     setArchivo(file)
     setError("")
     setRawText("")

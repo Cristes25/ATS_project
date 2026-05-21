@@ -119,6 +119,7 @@ const ResetPasswordPage = () => {
                                             value={nuevaContrasena}
                                             onChange={(e) => setNuevaContrasena(e.target.value)}
                                             required
+                                            minLength={8}
                                             className="w-full border border-slate-200 rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition-all"
                                         />
                                         <button type="button" onClick={() => setShowNueva(!showNueva)}
@@ -138,6 +139,7 @@ const ResetPasswordPage = () => {
                                             value={confirmarContrasena}
                                             onChange={(e) => setConfirmarContrasena(e.target.value)}
                                             required
+                                            minLength={8}
                                             className="w-full border border-slate-200 rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition-all"
                                         />
                                         <button type="button" onClick={() => setShowConfirmar(!showConfirmar)}
