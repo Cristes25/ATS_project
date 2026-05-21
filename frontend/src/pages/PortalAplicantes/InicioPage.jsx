@@ -261,7 +261,7 @@ export default function InicioPage() {
                     </div>
                   </div>
                   <button
-                    onClick={() => navigate(`/trabajo/${job.id}`)}
+                    onClick={() => navigate(`/trabajo/${job.public_token}`)}
                     className="w-full rounded-xl bg-violet-600 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5 active:scale-[0.98] mt-auto"
                   >
                     Ver detalles
@@ -310,7 +310,7 @@ export default function InicioPage() {
                     </div>
                   </div>
                   <button
-                    onClick={() => navigate(`/trabajo/${job.id}`)}
+                    onClick={() => navigate(`/trabajo/${job.public_token}`)}
                     className="w-full rounded-xl bg-violet-600 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5 active:scale-[0.98]"
                   >
                     Ver detalles
