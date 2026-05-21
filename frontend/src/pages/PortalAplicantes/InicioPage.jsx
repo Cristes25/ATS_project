@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { Search, MapPin, Layers, Clock, ChevronLeft, ChevronRight, Building2, ChevronDown, X } from "lucide-react"
 
 import dominusCan    from "@/assets/partners/dominus-can.jpg.jpeg"
@@ -12,27 +12,16 @@ import neuropasitos  from "@/assets/partners/neuropasitos.png.jpeg"
 import clinicaSanta  from "@/assets/partners/clinica-santamaria.jpg.jpeg"
 import nicashoe      from "@/assets/partners/nicashoe.png.jpeg"
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
-
-const coincidencias = [
-  { id: 1,  titulo: "Especialista Digital",   empresa: "Flor de Caña", ubicacion: "Managua", tipo: "Full-Time"  },
-  { id: 2,  titulo: "Community Manager",      empresa: "Tigo",         ubicacion: "Managua", tipo: "Remoto"     },
-  { id: 3,  titulo: "Content Creator",        empresa: "Flor de Caña", ubicacion: "Managua", tipo: "Part-Time"  },
-  { id: 4,  titulo: "Diseñador UX",           empresa: "Stripe",       ubicacion: "Remoto",  tipo: "Full-Time"  },
-  { id: 5,  titulo: "Analista de Mercado",    empresa: "Managua Co.",  ubicacion: "Managua", tipo: "Full-Time"  },
-  { id: 6,  titulo: "Ingeniero en Software",  empresa: "Claro",        ubicacion: "Managua", tipo: "Full-Time"  },
-  { id: 7,  titulo: "Product Manager",        empresa: "Tigo",         ubicacion: "Managua", tipo: "Híbrido"    },
-  { id: 8,  titulo: "Analista Financiero",    empresa: "BAC",          ubicacion: "Managua", tipo: "Full-Time"  },
-  { id: 9,  titulo: "Gerente de Proyectos",   empresa: "Ogilvy",       ubicacion: "Managua", tipo: "Full-Time"  },
-  { id: 10, titulo: "Diseñador Gráfico",      empresa: "Pepsi",        ubicacion: "Managua", tipo: "Part-Time"  },
-]
-
-const ultimasOfertas = [
-  { id: 4, titulo: "Especialista Digital",  empresa: "Flor de Caña", ubicacion: "Managua", tipo: "Full-Time" },
-  { id: 5, titulo: "Ingeniero en Software", empresa: "Flor de Caña", ubicacion: "Managua", tipo: "Full-Time" },
-  { id: 6, titulo: "Gerente de Proyectos",  empresa: "Flor de Caña", ubicacion: "Managua", tipo: "Full-Time" },
-  { id: 7, titulo: "Diseñador Grafico",     empresa: "Flor de Caña", ubicacion: "Managua", tipo: "Full-Time" },
-]
+function getTenantId() {
+  try {
+    const token = localStorage.getItem("applik_token")
+    if (token) {
+      const payload = JSON.parse(atob(token.split(".")[1]))
+      if (payload.company_id) return payload.company_id
+    }
+  } catch { /* ignorar */ }
+  return localStorage.getItem("applik_tenant_id") ?? null
+}
 
 const empresas = [
   { nombre: "Dominus Can",          logo: dominusCan   },
@@ -157,11 +146,25 @@ function useEmpresasVisibles() {
 
 export default function InicioPage() {
   const navigate    = useNavigate()
+  const [searchParams]  = useSearchParams()
   const [busqueda,   setBusqueda]   = useState("")
   const [inputFocus, setInputFocus] = useState(false)
   const [empresaIdx, setEmpresaIdx] = useState(0)
+  const [jobs,       setJobs]       = useState([])
+  const [cargando,   setCargando]   = useState(false)
 
   const empresasVisibles = useEmpresasVisibles()
+
+  useEffect(() => {
+    const tenantId = getTenantId() ?? searchParams.get("empresa")
+    if (!tenantId) return
+    setCargando(true)
+    fetch(`${import.meta.env.VITE_JOB_SERVICE_URL}/api/v1/jobs/public?tenant_id=${tenantId}`)
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data.data)) setJobs(data.data) })
+      .catch(() => {})
+      .finally(() => setCargando(false))
+  }, [])
 
   const handleBuscar = () => {
     const params = new URLSearchParams()
@@ -226,36 +229,48 @@ export default function InicioPage() {
         <h2 className="text-lg font-bold text-slate-800">Vacantes recomendadas</h2>
         <p className="mb-4 text-sm text-slate-400">Basadas en las habilidades y experiencia de tu CV</p>
 
-        <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1">
-          {coincidencias.map((job) => (
-            <div
-              key={job.id}
-              className="shrink-0 w-56 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-violet-200 flex flex-col"
-            >
-              <div className="flex items-center gap-3 mb-3 flex-1">
-                <EmpresaAvatar nombre={job.empresa} />
-                <div>
-                  <h3 className="font-semibold text-slate-800 text-sm leading-tight">{job.titulo}</h3>
-                  <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5">
-                    <Building2 className="size-3" /> {job.empresa}
+        {cargando ? (
+          <p className="text-sm text-slate-400">Cargando...</p>
+        ) : jobs.length === 0 ? (
+          <p className="text-sm text-slate-400">No hay vacantes disponibles</p>
+        ) : (
+          <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1">
+            {jobs.slice(0, 10).map((job) => {
+              const dept   = job.Department?.name ?? "—"
+              const salary = job.salary_min && job.salary_max
+                ? `C$ ${Number(job.salary_min).toLocaleString()} – C$ ${Number(job.salary_max).toLocaleString()}`
+                : "Salario no especificado"
+              return (
+                <div
+                  key={job.id}
+                  className="shrink-0 w-56 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-violet-200 flex flex-col"
+                >
+                  <div className="flex items-center gap-3 mb-3 flex-1">
+                    <EmpresaAvatar nombre={dept} />
+                    <div>
+                      <h3 className="font-semibold text-slate-800 text-sm leading-tight">{job.title}</h3>
+                      <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5">
+                        <Building2 className="size-3" /> {dept}
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-slate-400">
+                        <MapPin className="size-3" /> Managua
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-slate-400">
+                        <Clock className="size-3" /> {salary}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-slate-400">
-                    <MapPin className="size-3" /> {job.ubicacion}
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-slate-400">
-                    <Clock className="size-3" /> {job.tipo}
-                  </div>
+                  <button
+                    onClick={() => navigate(`/trabajo/${job.id}`)}
+                    className="w-full rounded-xl bg-violet-600 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5 active:scale-[0.98] mt-auto"
+                  >
+                    Ver detalles
+                  </button>
                 </div>
-              </div>
-              <button
-                onClick={() => navigate(`/trabajo/${job.id}`)}
-                className="w-full rounded-xl bg-violet-600 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5 active:scale-[0.98] mt-auto"
-              >
-                Ver detalles
-              </button>
-            </div>
-          ))}
-        </div>
+              )
+            })}
+          </div>
+        )}
       </section>
 
       {/* ── Últimas Ofertas Publicadas ── */}
@@ -263,36 +278,48 @@ export default function InicioPage() {
         <h2 className="text-lg font-bold text-slate-800">Ultimas Ofertas Publicadas</h2>
         <p className="mb-4 text-sm text-slate-400">Descubre las últimas oportunidades publicadas</p>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {ultimasOfertas.map((job) => (
-            <div
-              key={job.id}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-violet-200"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <EmpresaAvatar nombre={job.empresa} />
-                <div>
-                  <h3 className="font-semibold text-slate-800">{job.titulo}</h3>
-                  <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5">
-                    <Building2 className="size-3" /> {job.empresa}
+        {cargando ? (
+          <p className="text-sm text-slate-400">Cargando...</p>
+        ) : jobs.length === 0 ? (
+          <p className="text-sm text-slate-400">No hay vacantes disponibles</p>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {jobs.slice(0, 4).map((job) => {
+              const dept   = job.Department?.name ?? "—"
+              const salary = job.salary_min && job.salary_max
+                ? `C$ ${Number(job.salary_min).toLocaleString()} – C$ ${Number(job.salary_max).toLocaleString()}`
+                : "Salario no especificado"
+              return (
+                <div
+                  key={job.id}
+                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-violet-200"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <EmpresaAvatar nombre={dept} />
+                    <div>
+                      <h3 className="font-semibold text-slate-800">{job.title}</h3>
+                      <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5">
+                        <Building2 className="size-3" /> {dept}
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-slate-400">
+                        <MapPin className="size-3" /> Managua
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-slate-400">
+                        <Clock className="size-3" /> {salary}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-slate-400">
-                    <MapPin className="size-3" /> {job.ubicacion}
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-slate-400">
-                    <Clock className="size-3" /> {job.tipo}
-                  </div>
+                  <button
+                    onClick={() => navigate(`/trabajo/${job.id}`)}
+                    className="w-full rounded-xl bg-violet-600 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5 active:scale-[0.98]"
+                  >
+                    Ver detalles
+                  </button>
                 </div>
-              </div>
-              <button
-                onClick={() => navigate(`/trabajo/${job.id}`)}
-                className="w-full rounded-xl bg-violet-600 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-violet-700 hover:shadow-lg hover:shadow-violet-200 hover:-translate-y-0.5 active:scale-[0.98]"
-              >
-                Ver detalles
-              </button>
-            </div>
-          ))}
-        </div>
+              )
+            })}
+          </div>
+        )}
       </section>
 
       {/* ── Empresas Destacadas ── */}
