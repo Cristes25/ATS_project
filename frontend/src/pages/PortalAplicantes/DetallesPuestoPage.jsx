@@ -5,6 +5,7 @@ import {
   CheckCircle2, CircleDot, Building2, Tag, AlertCircle,
 } from "lucide-react"
 import CvDropzone from "@/components/ui/CvDropzone"
+import { fetchPublicJobById } from "@/api/jobs"
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -144,8 +145,7 @@ export default function DetallesPuestoPage() {
     if (UUID_RE.test(id)) {
       setJobToken(id)
       setCargando(true)
-      fetch(`${import.meta.env.VITE_JOB_SERVICE_URL}/api/v1/jobs/public/${id}`)
-        .then(r => { if (!r.ok) throw new Error("not found"); return r.json() })
+      fetchPublicJobById(id)
         .then(data => {
           setTrabajo({
             titulo:           data.title,

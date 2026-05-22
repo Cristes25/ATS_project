@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { Search, MapPin, Layers, Clock, ChevronLeft, ChevronRight, Building2, ChevronDown, X } from "lucide-react"
+import { fetchPublicJobs } from "@/api/jobs"
 
 import dominusCan    from "@/assets/partners/dominus-can.jpg.jpeg"
 import elGolazo      from "@/assets/partners/el-golazo.jpg.jpeg"
@@ -152,6 +153,7 @@ export default function InicioPage() {
   const [empresaIdx, setEmpresaIdx] = useState(0)
   const [jobs,       setJobs]       = useState([])
   const [cargando,   setCargando]   = useState(false)
+  const [error,      setError]      = useState("")
 
   const empresasVisibles = useEmpresasVisibles()
 
@@ -159,10 +161,9 @@ export default function InicioPage() {
     const tenantId = getTenantId() ?? searchParams.get("empresa")
     if (!tenantId) return
     setCargando(true)
-    fetch(`${import.meta.env.VITE_JOB_SERVICE_URL}/api/v1/jobs/public?tenant_id=${tenantId}`)
-      .then(r => r.json())
-      .then(data => { if (Array.isArray(data.data)) setJobs(data.data) })
-      .catch(() => {})
+    fetchPublicJobs(tenantId)
+      .then(setJobs)
+      .catch(err => setError(err.message ?? "No se pudieron cargar las vacantes"))
       .finally(() => setCargando(false))
   }, [])
 
@@ -223,6 +224,10 @@ export default function InicioPage() {
         </div>
       </section>
 
+
+      {error && (
+        <p className="text-xs text-red-500 bg-red-50 rounded-lg px-4 py-2">{error}</p>
+      )}
 
       {/* ── Coincidencias ── */}
       <section>

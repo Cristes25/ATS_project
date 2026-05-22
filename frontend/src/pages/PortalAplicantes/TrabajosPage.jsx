@@ -5,6 +5,7 @@ import {
   Search, MapPin, Layers, Clock, ChevronDown, ChevronLeft, ChevronRight,
   User, Sparkles, SlidersHorizontal, ArrowLeft, Building2, CheckCircle2, X,
 } from "lucide-react"
+import { fetchPublicJobs } from "@/api/jobs"
 
 const ubicaciones  = ["Managua", "León", "Granada", "Masaya"]
 const categorias   = ["Marketing", "Ventas", "Tecnología", "Finanzas"]
@@ -294,6 +295,7 @@ export default function TrabajosPage() {
   const [filtrosMobile,   setFiltrosMobile]   = useState(false)
   const [vacantesReales,  setVacantesReales]  = useState([])
   const [cargando,        setCargando]        = useState(false)
+  const [error,           setError]           = useState("")
 
   const [filtros, setFiltros] = useState({
     categorias:  [],
@@ -307,10 +309,9 @@ export default function TrabajosPage() {
     const tenantId = getTenantId() ?? searchParams.get("empresa")
     if (!tenantId) return
     setCargando(true)
-    fetch(`${import.meta.env.VITE_JOB_SERVICE_URL}/api/v1/jobs/public?tenant_id=${tenantId}`)
-      .then(r => r.json())
-      .then(data => { if (Array.isArray(data.data)) setVacantesReales(data.data) })
-      .catch(() => {})
+    fetchPublicJobs(tenantId)
+      .then(setVacantesReales)
+      .catch(err => setError(err.message ?? "No se pudieron cargar las vacantes"))
       .finally(() => setCargando(false))
   }, [])
 
@@ -426,6 +427,10 @@ export default function TrabajosPage() {
               </div>
             </div>
           </div>
+
+          {error && (
+            <p className="text-xs text-red-500 bg-red-50 rounded-lg px-4 py-2">{error}</p>
+          )}
 
           {/* Grid de trabajos */}
           {cargando ? (

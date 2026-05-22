@@ -28,8 +28,10 @@ export const fetchDepartments = () =>
 export const createDepartment = (name) =>
   apiFetch(`${JOB}/api/v1/departments`, { method: "POST", body: JSON.stringify({ name }) })
 
-export const fetchPublicJobs = (tenantId) =>
-  apiFetch(`${JOB}/api/v1/jobs/public?tenant_id=${tenantId}`, { auth: false })
+export async function fetchPublicJobs(tenantId) {
+  const data = await apiFetch(`${JOB}/api/v1/jobs/public?tenant_id=${tenantId}`, { auth: false })
+  return Array.isArray(data.data) ? data.data : data
+}
 
 export const fetchPublicJobById = (id) =>
   apiFetch(`${JOB}/api/v1/jobs/public/${id}`, { auth: false })

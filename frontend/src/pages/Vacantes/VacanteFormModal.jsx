@@ -3,6 +3,8 @@ import { Input, Textarea } from "@/components/ui/Input"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Sparkles, Loader2 } from "lucide-react"
+import { fetchDepartments, createDepartment, createJob, updateJob } from "@/api/jobs"
+import { generateJobDescription } from "@/api/ai"
 
 const tiposContrato = ["Full Time", "Part Time", "Contrato", "Temporal", "Prácticas"]
 
@@ -59,16 +61,10 @@ export default function VacanteFormModal({ vacante = null, onClose, onSave }) {
   const [guardando, setGuardando] = useState(false)
   const [error,     setError]     = useState("")
 
-  const token = localStorage.getItem("applik_token")
-
   useEffect(() => {
-    if (!token) return
-    fetch(`${import.meta.env.VITE_JOB_SERVICE_URL}/api/v1/departments`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(r => r.json())
+    fetchDepartments()
       .then(data => setDepartments(Array.isArray(data) ? data : []))
-      .catch(() => {})
+      .catch(err => setError(err.message ?? "No se pudieron cargar los departamentos"))
   }, [])
 
   const handleGenerarIA = async () => {
@@ -82,13 +78,7 @@ export default function VacanteFormModal({ vacante = null, onClose, onSave }) {
     setGenerandoIA(true)
     setErrorIA("")
     try {
-      const res = await fetch(`${import.meta.env.VITE_AI_SERVICE_URL}/api/v1/jobs/generate-description`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ jobTitle: titulo, companyUrl: urlEmpresa }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message ?? "Error al generar")
+      const data = await generateJobDescription(titulo, urlEmpresa)
       setDescripcion(stripMarkdown(data.data))
     } catch (err) {
       setErrorIA(err.message ?? "No se pudo generar la descripción. Intenta de nuevo.")
@@ -106,18 +96,14 @@ export default function VacanteFormModal({ vacante = null, onClose, onSave }) {
 
     // Si el departamento no existe en el tenant aún, se crea automáticamente
     if (!dept) {
-      const createRes = await fetch(`${import.meta.env.VITE_JOB_SERVICE_URL}/api/v1/departments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ name: departamento }),
-      })
-      if (!createRes.ok) {
-        setError("No se pudo crear el departamento. Intenta de nuevo.")
+      try {
+        dept = await createDepartment(departamento)
+        setDepartments(prev => [...prev, dept])
+      } catch (err) {
+        setError(err.message ?? "No se pudo crear el departamento. Intenta de nuevo.")
         setGuardando(false)
         return
       }
-      dept = await createRes.json()
-      setDepartments(prev => [...prev, dept])
     }
 
     const body = {
@@ -130,19 +116,9 @@ export default function VacanteFormModal({ vacante = null, onClose, onSave }) {
     }
 
     try {
-      const url = isEditing
-        ? `${import.meta.env.VITE_JOB_SERVICE_URL}/api/v1/jobs/${vacante.id}`
-        : `${import.meta.env.VITE_JOB_SERVICE_URL}/api/v1/jobs`
-      const method = isEditing ? "PATCH" : "POST"
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? data.message ?? "Error al guardar")
-
+      const data = isEditing
+        ? await updateJob(vacante.id, body)
+        : await createJob(body)
       onSave?.(data)
     } catch (err) {
       setError(err.message ?? "No se pudo guardar la vacante. Intenta de nuevo.")

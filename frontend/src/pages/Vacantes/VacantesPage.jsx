@@ -5,6 +5,7 @@ import { SearchInput } from "@/components/ui/Input"
 import { Card, CardContent } from "@/components/ui/Card"
 import VacanteFormModal from "./VacanteFormModal"
 import DetallesVacantePage from "./DetallesVacantePage"
+import { fetchJobs, deleteJob } from "@/api/jobs"
 
 export default function VacantesPage() {
   const [busqueda, setBusqueda]     = useState("")
@@ -13,18 +14,14 @@ export default function VacantesPage() {
   const [modal, setModal]           = useState(null)
   const [vacantes, setVacantes]     = useState([])
   const [cargando, setCargando]     = useState(true)
-
-  const token = localStorage.getItem("applik_token")
+  const [error,    setError]        = useState("")
 
   const cargarVacantes = () => {
-    if (!token) return
     setCargando(true)
-    fetch(`${import.meta.env.VITE_JOB_SERVICE_URL}/api/v1/jobs`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(r => r.json())
-      .then(data => setVacantes(Array.isArray(data.data) ? data.data : []))
-      .catch(() => {})
+    setError("")
+    fetchJobs()
+      .then(data => setVacantes(Array.isArray(data) ? data : []))
+      .catch(err => setError(err.message ?? "No se pudieron cargar las vacantes"))
       .finally(() => setCargando(false))
   }
 
@@ -42,10 +39,12 @@ export default function VacantesPage() {
 
   const eliminarVacante = async (vacante) => {
     if (!window.confirm(`¿Eliminar la vacante "${vacante.title}"? Esta acción no se puede deshacer.`)) return
-    await fetch(`${import.meta.env.VITE_JOB_SERVICE_URL}/api/v1/jobs/${vacante.id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    }).catch(() => {})
+    try {
+      await deleteJob(vacante.id)
+    } catch (err) {
+      alert(err.message ?? "No se pudo eliminar la vacante. Intenta de nuevo.")
+      return
+    }
     cargarVacantes()
   }
 
@@ -80,6 +79,10 @@ export default function VacantesPage() {
           <Plus /> Crear Vacante
         </Button>
       </div>
+
+      {error && (
+        <p className="text-xs text-red-500 bg-red-50 rounded-lg px-4 py-2">{error}</p>
+      )}
 
       {/* Tabla */}
       <Card>
