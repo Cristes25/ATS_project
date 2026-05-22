@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import { Filter } from "lucide-react"
 import { Avatar } from "@/components/ui/Avatar"
@@ -6,6 +6,7 @@ import { StageBadge } from "@/components/ui/StageBadge"
 import { SearchInput } from "@/components/ui/Input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/Card"
+import { updateApplicationStage } from "@/api/talent"
 import ActualizarEtapaModal from "./ActualizarEtapaModal"
 import DescartarModal from "./DescartarModal"
 import ProgramarEntrevistaModal from "./ProgramarEntrevistaModal"
@@ -212,18 +213,11 @@ export default function CandidatosPage() {
   const confirmarEtapa = async (nuevaEtapa) => {
     if (candidatoActivo.application_id) {
       try {
-        await fetch(
-          `${import.meta.env.VITE_TALENT_SERVICE_URL}/api/v1/talents/applications/${candidatoActivo.application_id}/stage`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("applik_token")}`,
-            },
-            body: JSON.stringify({ stage: nuevaEtapa }),
-          }
-        )
-      } catch { /* falla silencioso — UI se actualiza igual */ }
+        await updateApplicationStage(candidatoActivo.application_id, nuevaEtapa)
+      } catch (err) {
+        alert(err.message ?? "No se pudo actualizar la etapa. Intenta de nuevo.")
+        return
+      }
     }
     setCandidatos((prev) =>
       prev.map((c) => c.id === candidatoActivo.id ? { ...c, etapa: nuevaEtapa } : c)

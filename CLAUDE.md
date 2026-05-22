@@ -9,7 +9,7 @@ These rules apply to every file created or modified, without exception.
 
 - Variables, function names, and comments must be in Spanish.
 - UI-facing strings (labels, placeholders, error messages shown to users) must be in Spanish.
-- No emojis in code or comments.
+- No emojis in code comments or variable names. Emojis in UI-facing text (button labels, messages, icons) are allowed when they aid navigation or communication.
 - Comments must be brief and professional. Never reference the conversation, a ticket,
   a task, or why something is missing. If it needs explaining, explain the invariant — not the story.
 
