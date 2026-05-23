@@ -6,6 +6,7 @@ import { StageBadge } from "@/components/ui/StageBadge"
 import { SearchInput } from "@/components/ui/Input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/Card"
+import { MatchScoreBar } from "@/components/ui/MatchScoreBar"
 import { updateApplicationStage } from "@/api/talent"
 import ActualizarEtapaModal from "./ActualizarEtapaModal"
 import DescartarModal from "./DescartarModal"
@@ -128,20 +129,6 @@ const candidatosData = [
   { id: 3, nombre: "Martha Torres",     email: "m.torres@gmail.com",    posicion: "Desarrollador Frontend", ciudad: "Granada", score: 89, etapa: "Seleccionado",    area: "IT",          reclutador: "Martha Torres"      },
   { id: 4, nombre: "David Espinoza",    email: "d.espinoza@gmail.com",  posicion: "Contador Senior",        ciudad: "Managua", score: 80, etapa: "Bajo Entrevista", area: "Finanzas",    reclutador: "Cristiana Espinoza" },
 ]
-
-function MatchScoreBar({ score }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="h-1.5 w-20 rounded-full bg-slate-100 overflow-hidden">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-blue-dark to-teal-light"
-          style={{ width: `${score}%` }}
-        />
-      </div>
-      <span className="text-sm font-medium text-slate-700">{score}%</span>
-    </div>
-  )
-}
 
 // Menú de acciones por candidato — usa portal para no quedar atrapado en overflow de la tabla
 function AccionesMenu({ pos, onActualizar, onDescartar, onEntrevista, onCorreo, onClose }) {

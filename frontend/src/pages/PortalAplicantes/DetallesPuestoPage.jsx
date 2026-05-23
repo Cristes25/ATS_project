@@ -5,6 +5,7 @@ import {
   CheckCircle2, CircleDot, Building2, Tag, AlertCircle,
 } from "lucide-react"
 import CvDropzone from "@/components/ui/CvDropzone"
+import { MatchScoreBar } from "@/components/ui/MatchScoreBar"
 import { fetchPublicJobById } from "@/api/jobs"
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -59,17 +60,6 @@ const fallback = {
 
 // ─── Barra de progreso ────────────────────────────────────────────────────────
 
-function MatchBar({ porcentaje }) {
-  return (
-    <div className="h-1.5 w-full rounded-full bg-slate-100">
-      <div
-        className="h-1.5 rounded-full bg-violet-600 transition-all duration-700"
-        style={{ width: `${porcentaje}%` }}
-      />
-    </div>
-  )
-}
-
 // ─── Sidebar cards ────────────────────────────────────────────────────────────
 
 function SidebarContent({ trabajo, aplicado, onAplicar }) {
@@ -88,7 +78,7 @@ function SidebarContent({ trabajo, aplicado, onAplicar }) {
             <span className="text-3xl font-bold text-slate-800">{trabajo.match}%</span>
             <span className={`mb-1 text-sm font-semibold ${matchColor}`}>{trabajo.matchLabel}</span>
           </div>
-          <MatchBar porcentaje={trabajo.match} />
+          <MatchScoreBar score={trabajo.match} showLabel={false} variant="solid" />
           {trabajo.matchItems?.length > 0 && (
             <ul className="mt-4 space-y-3">
               {trabajo.matchItems.map((item, i) => (

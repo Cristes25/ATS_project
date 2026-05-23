@@ -5,6 +5,7 @@ import { StatCard, Card, CardContent } from "@/components/ui/Card"
 import { Avatar } from "@/components/ui/Avatar"
 import { StageBadge } from "@/components/ui/StageBadge"
 import { Button } from "@/components/ui/button"
+import { MatchScoreBar } from "@/components/ui/MatchScoreBar"
 import ActividadRecientePage from "./ActividadRecientePage"
 import { fetchJobStats, fetchJobs } from "@/api/jobs"
 
@@ -23,20 +24,6 @@ const topCandidatos = [
 ]
 
 const STATUS_LABEL = { published: "Activa", paused: "Pausada", closed: "Cerrada", draft: "Borrador" }
-
-function MatchScoreBar({ score }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="h-1.5 w-16 md:w-20 rounded-full bg-slate-100 overflow-hidden">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-blue-dark to-teal-light"
-          style={{ width: `${score}%` }}
-        />
-      </div>
-      <span className="text-sm font-medium text-slate-700">{score}%</span>
-    </div>
-  )
-}
 
 export default function DashboardPage() {
   const navigate  = useNavigate()
