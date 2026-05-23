@@ -6,6 +6,7 @@ import {
   User, Sparkles, SlidersHorizontal, ArrowLeft, Building2, CheckCircle2, X,
 } from "lucide-react"
 import { fetchPublicJobs } from "@/api/jobs"
+import { getTenantId } from "@/lib/token"
 
 const ubicaciones  = ["Managua", "León", "Granada", "Masaya"]
 const categorias   = ["Marketing", "Ventas", "Tecnología", "Finanzas"]
@@ -274,17 +275,6 @@ function JobCard({ job }) {
 }
 
 // ─── Página principal ─────────────────────────────────────────────────────────
-
-function getTenantId() {
-  try {
-    const token = localStorage.getItem("applik_token")
-    if (token) {
-      const payload = JSON.parse(atob(token.split(".")[1]))
-      if (payload.company_id) return payload.company_id
-    }
-  } catch { /* ignorar */ }
-  return localStorage.getItem("applik_tenant_id") ?? null
-}
 
 export default function TrabajosPage() {
   const [searchParams]    = useSearchParams()

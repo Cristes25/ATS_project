@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect } from "react"
 import { getMe, logoutApi } from "@/api/auth"
+import { decodeToken } from "@/lib/token"
 
 const AuthContext = createContext()
 
@@ -60,19 +61,9 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => useContext(AuthContext)
 
 function parseRole(token) {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]))
-    return payload.role ?? "aplicante"
-  } catch {
-    return "aplicante"
-  }
+  return decodeToken(token)?.role ?? "aplicante"
 }
 
 function parseCompanyId(token) {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]))
-    return payload.company_id ?? null
-  } catch {
-    return null
-  }
+  return decodeToken(token)?.company_id ?? null
 }

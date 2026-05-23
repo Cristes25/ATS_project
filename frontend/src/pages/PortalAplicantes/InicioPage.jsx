@@ -3,6 +3,7 @@ import { createPortal } from "react-dom"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { Search, MapPin, Layers, Clock, ChevronLeft, ChevronRight, Building2, ChevronDown, X } from "lucide-react"
 import { fetchPublicJobs } from "@/api/jobs"
+import { getTenantId } from "@/lib/token"
 
 import dominusCan    from "@/assets/partners/dominus-can.jpg.jpeg"
 import elGolazo      from "@/assets/partners/el-golazo.jpg.jpeg"
@@ -12,17 +13,6 @@ import silvioArtola  from "@/assets/partners/silvio-artola.png.jpeg"
 import neuropasitos  from "@/assets/partners/neuropasitos.png.jpeg"
 import clinicaSanta  from "@/assets/partners/clinica-santamaria.jpg.jpeg"
 import nicashoe      from "@/assets/partners/nicashoe.png.jpeg"
-
-function getTenantId() {
-  try {
-    const token = localStorage.getItem("applik_token")
-    if (token) {
-      const payload = JSON.parse(atob(token.split(".")[1]))
-      if (payload.company_id) return payload.company_id
-    }
-  } catch { /* ignorar */ }
-  return localStorage.getItem("applik_tenant_id") ?? null
-}
 
 const empresas = [
   { nombre: "Dominus Can",          logo: dominusCan   },
