@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Building2, Mail, Lock, User, Hash, CheckCircle2 } from "lucide-react";
+import { Building2, Mail, Lock, User, Hash, CheckCircle2 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
+import { PasswordToggle } from "@/components/ui/PasswordToggle";
 import { useAuth } from "@/context/AuthContext";
 import { registerOrganization } from "@/api/auth";
 import Ley787Modal from "@/components/ui/Ley787Modal";
@@ -167,10 +168,7 @@ const RegistroEmpresaPage = () => {
                                 <input type={showPassword ? "text" : "password"} placeholder="Mínimo 8 caracteres" value={password}
                                     onChange={(e) => setPassword(e.target.value)} required minLength={8}
                                     className="w-full border border-slate-200 rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all" />
-                                <button type="button" onClick={() => setShowPassword(v => !v)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" tabIndex={-1}>
-                                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                                </button>
+                                <PasswordToggle visible={showPassword} onToggle={() => setShowPassword(v => !v)} />
                             </div>
                         </div>
 
@@ -184,10 +182,7 @@ const RegistroEmpresaPage = () => {
                                     className={`w-full border rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 transition-all ${
                                         errorPassword ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:ring-blue-400 focus:border-transparent"
                                     }`} />
-                                <button type="button" onClick={() => setShowConfirmar(v => !v)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" tabIndex={-1}>
-                                    {showConfirmar ? <EyeOff size={16} /> : <Eye size={16} />}
-                                </button>
+                                <PasswordToggle visible={showConfirmar} onToggle={() => setShowConfirmar(v => !v)} />
                             </div>
                         </div>
 

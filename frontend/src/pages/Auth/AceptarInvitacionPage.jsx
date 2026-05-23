@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { useSearchParams, useNavigate, Link } from "react-router-dom"
-import { Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react"
+import { Loader2, CheckCircle2 } from "lucide-react"
 import Logo from "@/components/ui/Logo"
+import { PasswordToggle } from "@/components/ui/PasswordToggle"
 import { useAuth } from "@/context/AuthContext"
 
 export default function AceptarInvitacionPage() {
@@ -141,10 +142,7 @@ export default function AceptarInvitacionPage() {
                   minLength={8}
                   className="w-full border border-slate-200 rounded-xl px-3 pr-10 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition-all"
                 />
-                <button type="button" onClick={() => setMostrarPass(!mostrarPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                  {mostrarPass ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                </button>
+                <PasswordToggle visible={mostrarPass} onToggle={() => setMostrarPass(!mostrarPass)} />
               </div>
             </div>
 

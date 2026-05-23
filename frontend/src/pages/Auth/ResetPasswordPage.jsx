@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Eye, EyeOff, ArrowLeft, KeyRound, ShieldCheck } from "lucide-react";
+import { ArrowLeft, KeyRound, ShieldCheck } from "lucide-react";
 import Logo from "@/components/ui/Logo";
+import { PasswordToggle } from "@/components/ui/PasswordToggle";
 
 const ResetPasswordPage = () => {
     const [searchParams] = useSearchParams();
@@ -122,10 +123,7 @@ const ResetPasswordPage = () => {
                                             minLength={8}
                                             className="w-full border border-slate-200 rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition-all"
                                         />
-                                        <button type="button" onClick={() => setShowNueva(!showNueva)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
-                                            {showNueva ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                                        </button>
+                                        <PasswordToggle visible={showNueva} onToggle={() => setShowNueva(!showNueva)} />
                                     </div>
                                 </div>
 
@@ -142,10 +140,7 @@ const ResetPasswordPage = () => {
                                             minLength={8}
                                             className="w-full border border-slate-200 rounded-xl pl-10 pr-10 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition-all"
                                         />
-                                        <button type="button" onClick={() => setShowConfirmar(!showConfirmar)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
-                                            {showConfirmar ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                                        </button>
+                                        <PasswordToggle visible={showConfirmar} onToggle={() => setShowConfirmar(!showConfirmar)} />
                                     </div>
                                 </div>
 
