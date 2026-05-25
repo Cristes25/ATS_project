@@ -43,3 +43,19 @@ export async function logoutApi(token) {
     headers: { Authorization: `Bearer ${token}` },
   })
 }
+
+export async function updateMe(token, { first_name, last_name }) {
+  return request("/me", {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ first_name, last_name }),
+  })
+}
+
+export async function changePassword(token, { currentPassword, newPassword }) {
+  return request("/change-password", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  })
+}

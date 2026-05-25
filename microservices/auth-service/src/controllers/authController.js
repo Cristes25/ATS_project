@@ -399,3 +399,178 @@ exports.handleResetPassword = async (request, reply) => {
     return reply.code(500).send({ success: false, message: 'Error interno al restablecer la contraseña.' });
   }
 };
+
+exports.handleDeleteAccount = async (request, reply) => {
+  const { role, user_id } = request.user;
+
+  if (role !== 'aplicante') {
+    return reply.code(403).send({
+      success: false,
+      message: 'Acceso denegado: solo los candidatos/aplicantes pueden eliminar su cuenta de forma directa.'
+    });
+  }
+
+  const transaction = await sequelize.transaction();
+
+  try {
+    const candidate = await Candidate.findByPk(user_id);
+    if (!candidate) {
+      await transaction.rollback();
+      return reply.code(404).send({ success: false, message: 'Usuario no encontrado.' });
+    }
+
+    // 1. Llamar al talent-service para eliminar perfiles y postulaciones asociadas
+    try {
+      const axios = require('axios');
+      const talentServiceUrl = process.env.TALENT_API_URL || 
+        (process.env.NODE_ENV === 'production' 
+          ? 'http://applik_talent:3002/api/v1/talents' 
+          : 'http://localhost:3002/api/v1/talents');
+
+      await axios.delete(`${talentServiceUrl}/candidates/${user_id}`, {
+        headers: {
+          Authorization: request.headers.authorization
+        }
+      });
+    } catch (talentError) {
+      // Si falla porque el perfil no existe (404), procedemos. Si es otro error de red/servidor, abortamos
+      const status = talentError.response ? talentError.response.status : null;
+      if (status !== 404) {
+        request.log.error('Fallo en talent-service al borrar perfil de candidato:', talentError.message);
+        throw new Error('Fallo al limpiar perfiles asociados en talent-service.');
+      }
+    }
+
+    // 2. Eliminar el registro del candidato de la base de datos de Auth
+    // Nota: Las sesiones asociadas se eliminarán automáticamente en cascada debido a la relación onDelete: 'CASCADE'
+    await candidate.destroy({ transaction });
+
+    await transaction.commit();
+
+    return reply.code(200).send({
+      success: true,
+      message: 'Cuenta y todos los datos asociados eliminados permanentemente (Cumplimiento Ley 787).'
+    });
+  } catch (error) {
+    if (transaction && !transaction.finished) {
+      await transaction.rollback();
+    }
+    request.log.error(error);
+    return reply.code(500).send({
+      success: false,
+      message: `Error al eliminar la cuenta: ${error.message}`
+    });
+  }
+};
+
+exports.handleUpdateMe = async (request, reply) => {
+  const { role, user_id } = request.user;
+  const { first_name, last_name } = request.body;
+
+  // Validation: min length 2, max length 50 if provided
+  if (first_name !== undefined) {
+    if (typeof first_name !== 'string' || first_name.trim().length < 2 || first_name.trim().length > 50) {
+      return reply.code(400).send({
+        success: false,
+        message: 'El nombre (first_name) debe tener entre 2 y 50 caracteres.'
+      });
+    }
+  }
+
+  if (last_name !== undefined) {
+    if (typeof last_name !== 'string' || last_name.trim().length < 2 || last_name.trim().length > 50) {
+      return reply.code(400).send({
+        success: false,
+        message: 'El apellido (last_name) debe tener entre 2 y 50 caracteres.'
+      });
+    }
+  }
+
+  try {
+    let user;
+    if (role === 'admin' || role === 'reclutador') {
+      user = await Employee.findOne({
+        where: { id: user_id },
+        include: {
+          model: Tenant,
+          attributes: ['business_name']
+        }
+      });
+    } else if (role === 'aplicante') {
+      user = await Candidate.findOne({ where: { id: user_id } });
+    }
+
+    if (!user) {
+      return reply.code(404).send({ success: false, message: 'Usuario no encontrado' });
+    }
+
+    const updates = {};
+    if (first_name !== undefined) updates.first_name = first_name.trim();
+    if (last_name !== undefined) updates.last_name = last_name.trim();
+
+    await user.update(updates);
+
+    const responseData = {
+      name: `${user.first_name} ${user.last_name}`,
+      email: user.email,
+      tenant_name: user.Tenant ? user.Tenant.business_name : null
+    };
+
+    return reply.code(200).send({
+      success: true,
+      data: responseData
+    });
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ success: false, message: 'Error al actualizar el perfil' });
+  }
+};
+
+exports.handleChangePassword = async (request, reply) => {
+  const { role, user_id } = request.user;
+  const { currentPassword, newPassword } = request.body;
+
+  if (!currentPassword || !newPassword) {
+    return reply.code(400).send({
+      success: false,
+      message: 'La contraseña actual y la nueva son requeridas.'
+    });
+  }
+
+  if (typeof newPassword !== 'string' || newPassword.length < 8) {
+    return reply.code(400).send({
+      success: false,
+      message: 'La nueva contraseña debe tener al menos 8 caracteres.'
+    });
+  }
+
+  try {
+    let user;
+    if (role === 'admin' || role === 'reclutador') {
+      user = await Employee.findByPk(user_id);
+    } else if (role === 'aplicante') {
+      user = await Candidate.findByPk(user_id);
+    }
+
+    if (!user) {
+      return reply.code(404).send({ success: false, message: 'Usuario no encontrado' });
+    }
+
+    // Verify current password
+    const isMatch = await verifyPassword(currentPassword, user.password);
+    if (!isMatch) {
+      return reply.code(400).send({ success: false, message: 'La contraseña actual es incorrecta.' });
+    }
+
+    // El hook beforeSave agrega el pepper — asignar user.password = newPassword directamente
+    user.password = newPassword;
+    await user.save();
+
+    return reply.code(200).send({
+      message: 'Contraseña actualizada'
+    });
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ success: false, message: 'Error al cambiar la contraseña' });
+  }
+};

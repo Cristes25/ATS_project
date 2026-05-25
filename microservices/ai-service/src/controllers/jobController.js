@@ -1,31 +1,25 @@
-const asyncHandler = require('express-async-handler');
-const jobService = require('../services/jobService');
+const asyncHandler = require('express-async-handler')
+const jobService = require ('../services/jobServices')
 
 /**
- * @desc    Genera una descripción de trabajo alineada con la cultura de la empresa desde una URL.
- * @route   POST /api/v1/jobs/generate-description
- * @access  Private
+ * @desc Genera una descripcion de trabajo alineado con la cultura de una empresa obtenido de una URL 
+ * @route POST api/v1/jobs/generate-description
+ * @access Private 
+ * 
  */
-const generateJobDescription = asyncHandler(async (req, res) => {
-    const { jobTitle, companyUrl } = req.body;
 
-    if (!jobTitle || !companyUrl) {
-        res.status(400);
-        throw new Error('Both jobTitle and companyUrl are required in the request body.');
+const generateJobDescription = asyncHandler (async (req,res)=>{
+    const {jobTitle, companyUrl} = req.body 
+    if (!jobTitle||!companyUrl) {
+        res.status(400)
+        throw new Error ("JobTitle y companyURL son necesarios en el cuerpo de la solicitud")
+
     }
-
-    // 1. Raspar el texto de la cultura de la empresa desde la URL proporcionada
-    const cultureText = await jobService.scrapeCompanyCulture(companyUrl);
-
-    // 2. Generar la descripción del trabajo basada en la cultura raspada
-    const jobDescription = await jobService.generateDescription(jobTitle, cultureText);
-
+    //1. Obtener la cultura de la empresa desde la URL
+    const cultureText = await jobService.scrapeCompanyCulture(companyUrl)
+    //2. Generar descripcion de trabajo basado en la cultura obtenida 
+    const jobDescription = await jobService.generateDescription(jobTitle, companyUrl)
     res.status(201).json({
-        message: "Descripción del trabajo generada exitosamente.",
-        data: jobDescription
-    });
-});
-
-module.exports = {
-    generateJobDescription
-};
+        message: " Descripcion de puesto generada correctamente "
+    })
+})
