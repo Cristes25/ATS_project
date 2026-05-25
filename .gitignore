@@ -28,3 +28,4 @@ docs/
 # Tests
 tests/
 test_output.txt
+scratch/
