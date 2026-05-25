@@ -18,7 +18,7 @@ const CandidateProfile = sequelize.define('CandidateProfile', {
         allowNull: false,
     },
     headline: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true,
     },
     location: {

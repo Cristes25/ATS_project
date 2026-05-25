@@ -79,7 +79,8 @@ exports.createInvitation = async (request, reply) => {
         });
 
         // ESTE LINK ES DEL FRONTEND NO DEL AUTH !!!
-        const inviteLink = `http://localhost:5173/register/reclutador?token=${token}&email=${email}`;
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const inviteLink = `${frontendUrl}/register/reclutador?token=${token}&email=${email}`;
         // Enviar el link por log para testing
         request.log.info(`[MOCK EMAIL] To: ${email} | Subject: Únete a mi equipo en APPLIK | Link: ${inviteLink}`);
         // Enviar el link usando el emailService

@@ -52,8 +52,8 @@ class IngestCandidateUseCase {
             }, { transaction });
 
             // 4. Procesar Experiencia Laboral
-            if (extractedData.work_experiences && extractedData.work_experiences.length > 0) {
-                const workExps = extractedData.work_experiences.map(exp => ({
+            if (extractedData.work_experience && extractedData.work_experience.length > 0) {
+                const workExps = extractedData.work_experience.map(exp => ({
                     profile_id: profile.id,
                     company_name: exp.company_name || 'Desconocido',
                     job_title: exp.job_title || 'Colaborador',

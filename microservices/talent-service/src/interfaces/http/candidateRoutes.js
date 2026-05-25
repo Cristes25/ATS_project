@@ -64,6 +64,23 @@ async function routes(fastify, options) {
         }
     }, candidateController.updatePipelineStatus.bind(candidateController));
 
+    // GET /api/v1/talents/applications (Requiere JWT)
+    fastify.get('/applications', {
+        preValidation: [tenantInterceptor],
+        schema: {
+            description: 'Obtener la lista de postulaciones filtradas por tenant_id (Reclutador).',
+            tags: ['Talent'],
+            security: [{ bearerAuth: [] }],
+            querystring: {
+                type: 'object',
+                required: ['tenant_id'],
+                properties: {
+                    tenant_id: { type: 'integer' }
+                }
+            }
+        }
+    }, candidateController.getApplications.bind(candidateController));
+
     // ─── HISTORIAL DE ETAPAS ──────────────────────────────────────────────────
 
     // PATCH /api/v1/talents/applications/:id/stage
@@ -100,6 +117,22 @@ async function routes(fastify, options) {
             params: { type: 'object', properties: { jobId: { type: 'integer' } } }
         }
     }, applicationController.getStageAnalytics);
+
+    // DELETE /api/v1/talents/candidates/:candidateId (Cumplimiento Ley 787)
+    fastify.delete('/candidates/:candidateId', {
+        schema: {
+            description: 'Eliminar todos los datos de perfil y postulaciones de un candidato (Ley 787).',
+            tags: ['Talent'],
+            security: [{ bearerAuth: [] }],
+            params: {
+                type: 'object',
+                required: ['candidateId'],
+                properties: {
+                    candidateId: { type: 'integer' }
+                }
+            }
+        }
+    }, candidateController.deleteCandidateData.bind(candidateController));
 }
 
 module.exports = routes;

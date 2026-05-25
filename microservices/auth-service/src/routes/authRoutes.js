@@ -30,9 +30,24 @@ async function authRoutes(fastify, options) {
     onRequest: [fastify.authenticate]
   }, authController.getMe);
 
+  // Actualizar datos del usuario logueado
+  fastify.patch('/me', {
+    onRequest: [fastify.authenticate]
+  }, authController.handleUpdateMe);
+
+  // Cambio de contraseña para usuario autenticado
+  fastify.post('/change-password', {
+    onRequest: [fastify.authenticate]
+  }, authController.handleChangePassword);
+
   fastify.post('/logout', {
-  onRequest: [fastify.authenticate]
-}, authController.handleLogout);
+    onRequest: [fastify.authenticate]
+  }, authController.handleLogout);
+
+  // DELETE /candidates/me (Cumplimiento Ley 787 de Derecho al Olvido)
+  fastify.delete('/candidates/me', {
+    onRequest: [fastify.authenticate]
+  }, authController.handleDeleteAccount);
 }
 
 module.exports = authRoutes;
