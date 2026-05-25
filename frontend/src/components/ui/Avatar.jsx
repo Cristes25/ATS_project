@@ -28,9 +28,10 @@ const sizeClasses = {
   lg: "size-20 text-xl",
 }
 
-export function Avatar({ name, src, size = "sm", className }) {
+export function Avatar({ name, src, size = "sm", shape = "circle", className }) {
   const initials = getInitials(name)
   const gradient = getGradient(name)
+  const shapeClass = shape === "square" ? "rounded-xl" : "rounded-full"
 
   if (src) {
     return (
@@ -38,7 +39,8 @@ export function Avatar({ name, src, size = "sm", className }) {
         src={src}
         alt={name}
         className={cn(
-          "rounded-full object-cover shrink-0",
+          "object-cover shrink-0",
+          shapeClass,
           sizeClasses[size],
           className
         )}
@@ -49,7 +51,8 @@ export function Avatar({ name, src, size = "sm", className }) {
   return (
     <div
       className={cn(
-        "rounded-full bg-gradient-to-br flex items-center justify-center shrink-0 font-semibold text-white",
+        "bg-gradient-to-br flex items-center justify-center shrink-0 font-semibold text-white",
+        shapeClass,
         gradient,
         sizeClasses[size],
         className

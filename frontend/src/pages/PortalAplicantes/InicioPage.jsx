@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { Search, MapPin, Layers, Clock, ChevronLeft, ChevronRight, Building2, ChevronDown, X } from "lucide-react"
 import { fetchPublicJobs } from "@/api/jobs"
 import { getTenantId } from "@/lib/token"
+import { Avatar } from "@/components/ui/Avatar"
 
 import dominusCan    from "@/assets/partners/dominus-can.jpg.jpeg"
 import elGolazo      from "@/assets/partners/el-golazo.jpg.jpeg"
@@ -29,21 +30,6 @@ const categorias  = ["Tecnología", "Marketing", "Finanzas", "Operaciones", "Dis
 const modalidades = ["Full-Time", "Part-Time", "Remoto", "Híbrido"]
 
 // ─── Sub-componentes ──────────────────────────────────────────────────────────
-
-function EmpresaAvatar({ nombre }) {
-  const colores = [
-    "from-violet-500 to-purple-600",
-    "from-blue-500 to-blue-700",
-    "from-teal-500 to-teal-700",
-    "from-amber-500 to-orange-600",
-  ]
-  const idx = nombre.charCodeAt(0) % colores.length
-  return (
-    <div className={`size-14 rounded-xl bg-gradient-to-br ${colores[idx]} flex items-center justify-center text-xl font-bold text-white shrink-0`}>
-      {nombre.charAt(0)}
-    </div>
-  )
-}
 
 // Dropdown con portal — flota sobre todo, nunca se corta
 function AnimatedDropdown({ icon: Icon, placeholder, options }) {
@@ -241,7 +227,7 @@ export default function InicioPage() {
                   className="shrink-0 w-56 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-violet-200 flex flex-col"
                 >
                   <div className="flex items-center gap-3 mb-3 flex-1">
-                    <EmpresaAvatar nombre={dept} />
+                    <Avatar name={dept} shape="square" className="size-14 text-xl" />
                     <div>
                       <h3 className="font-semibold text-slate-800 text-sm leading-tight">{job.title}</h3>
                       <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5">
@@ -290,7 +276,7 @@ export default function InicioPage() {
                   className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-violet-200"
                 >
                   <div className="flex items-center gap-3 mb-3">
-                    <EmpresaAvatar nombre={dept} />
+                    <Avatar name={dept} shape="square" className="size-14 text-xl" />
                     <div>
                       <h3 className="font-semibold text-slate-800">{job.title}</h3>
                       <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5">

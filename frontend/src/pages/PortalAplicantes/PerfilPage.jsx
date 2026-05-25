@@ -4,17 +4,7 @@ import {
   MapPin, Phone, Briefcase, GraduationCap,
   Plus, Pencil, Download, Upload, LogOut, X, Check,
 } from "lucide-react"
-
-// ─── Avatar ───────────────────────────────────────────────────────────────────
-
-function Initials({ name }) {
-  const initials = name ? name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase() : "?"
-  return (
-    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center text-white text-2xl font-bold shrink-0">
-      {initials}
-    </div>
-  )
-}
+import { Avatar } from "@/components/ui/Avatar"
 
 // ─── Chip de habilidad ────────────────────────────────────────────────────────
 
@@ -190,7 +180,7 @@ export default function PerfilPage() {
       {/* ── Header ── */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <Initials name={user?.name} />
+          <Avatar name={user?.name} size="lg" />
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold text-slate-800">{user?.name ?? "Candidato"}</h1>
             <p className="text-sm text-slate-500 mt-0.5">{user?.email}</p>
