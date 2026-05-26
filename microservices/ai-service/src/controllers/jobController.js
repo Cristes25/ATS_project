@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler')
-const jobService = require ('../services/jobServices')
+const jobService = require ('../services/jobService')
 
 /**
  * @desc Genera una descripcion de trabajo alineado con la cultura de una empresa obtenido de una URL 
