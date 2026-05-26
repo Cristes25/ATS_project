@@ -2,8 +2,8 @@ const BASE = `${import.meta.env.VITE_AUTH_SERVICE_URL}/api/v1/auth`
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...options.headers },
     ...options,
+    headers: { "Content-Type": "application/json", ...options.headers },
   })
   const data = await res.json()
   if (!res.ok) throw new Error(data.message || data.error || "Error del servidor")
