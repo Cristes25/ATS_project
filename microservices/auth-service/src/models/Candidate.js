@@ -24,7 +24,7 @@ const Candidate = sequelize.define('Candidate', {
   },
   password: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true
   },
   law_787_accepted: {
     type: DataTypes.BOOLEAN,
@@ -33,7 +33,7 @@ const Candidate = sequelize.define('Candidate', {
 }, {
   hooks: {
     beforeSave: async (candidate) => {
-      if (candidate.changed('password')) {
+      if (candidate.changed('password') && candidate.password) {
         const saltRounds = 12;
         const pepper = process.env.AUTH_DB_PEPPER;
 

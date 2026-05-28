@@ -11,6 +11,7 @@ const bcrypt = require('bcrypt');
 // }
 
 const verifyPassword = async (password, hash) => {
+    if (!hash) return false;
     const pepper = process.env.AUTH_DB_PEPPER;
     return await bcrypt.compare(password + pepper, hash);
 };
