@@ -23,3 +23,7 @@ const generateJobDescription = asyncHandler (async (req,res)=>{
         message: " Descripcion de puesto generada correctamente "
     })
 })
+
+module.exports = {
+    generateJobDescription
+};
