@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { Input, Textarea } from "@/components/ui/Input"
 import { Button } from "@/components/ui/button"
+import { Modal } from "@/components/ui/Modal"
 import { cn } from "@/lib/utils"
 import { Sparkles, Loader2 } from "lucide-react"
 import { fetchDepartments, createDepartment, createJob, updateJob } from "@/api/jobs"
@@ -134,8 +135,7 @@ export default function VacanteFormModal({ vacante = null, onClose, onSave }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-8 shadow-xl">
+    <Modal size="lg" onClose={onClose} className="max-h-[90vh] overflow-y-auto p-8">
 
         {/* Header */}
         <div className="mb-6 border-b border-slate-100 pb-4">
@@ -298,7 +298,6 @@ export default function VacanteFormModal({ vacante = null, onClose, onSave }) {
           </div>
 
         </form>
-      </div>
-    </div>
+    </Modal>
   )
 }
