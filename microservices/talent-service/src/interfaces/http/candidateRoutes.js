@@ -26,7 +26,6 @@ async function routes(fastify, options) {
 
     // POST /api/v1/talents/upload (Manual por Reclutador, requiere JWT y jobId)
     fastify.post('/upload', {
-        preValidation: [tenantInterceptor],
         schema: {
             description: 'Carga manual de un CV hacia un JobID específico (Requiere Token Reclutador).',
             tags: ['Talent'],
@@ -66,7 +65,6 @@ async function routes(fastify, options) {
 
     // GET /api/v1/talents/applications (Requiere JWT)
     fastify.get('/applications', {
-        preValidation: [tenantInterceptor],
         schema: {
             description: 'Obtener la lista de postulaciones filtradas por tenant_id (Reclutador).',
             tags: ['Talent'],
